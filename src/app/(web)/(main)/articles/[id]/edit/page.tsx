@@ -103,7 +103,7 @@ export default function EditArticlePage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-3 h-3 text-primary-600" />
+            <FileText className="w-6 h-6 text-primary-600" />
             Edit Article
           </h1>
           <p className="text-slate-500 text-sm">Update article content</p>
@@ -117,8 +117,8 @@ export default function EditArticlePage() {
           <div className="h-10 bg-slate-100 rounded-lg" />
         </div>
       ) : (
-        <div>
-          <div>
+        <>
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Title *
@@ -131,7 +131,6 @@ export default function EditArticlePage() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
-
             {/* Featured Image */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -177,7 +176,6 @@ export default function EditArticlePage() {
                 </label>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Excerpt
@@ -190,7 +188,6 @@ export default function EditArticlePage() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Content
@@ -201,7 +198,6 @@ export default function EditArticlePage() {
                 placeholder="Write article content..."
               />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -230,7 +226,6 @@ export default function EditArticlePage() {
                 </select>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Tags{" "}
@@ -246,9 +241,8 @@ export default function EditArticlePage() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
-
             {/* SEO Section */}
-            <div className="border-t border-slate-100 pt-4">
+            {/* <div className="border-t border-slate-100 pt-4">
               <p className="text-sm font-semibold text-slate-700 mb-3">
                 SEO Settings
               </p>
@@ -293,7 +287,7 @@ export default function EditArticlePage() {
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Actions */}
@@ -312,7 +306,7 @@ export default function EditArticlePage() {
               {isPending ? "Saving..." : "Save Changes"}
             </button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

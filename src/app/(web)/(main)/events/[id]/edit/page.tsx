@@ -107,7 +107,7 @@ export default function EditEventPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-full mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
@@ -118,7 +118,7 @@ export default function EditEventPage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <CalendarDays className="w-3 h-3 text-primary-600" />
+            <CalendarDays className="w-6 h-6 text-primary-600" />
             Edit Event
           </h1>
           <p className="text-slate-500 text-sm">Update event details</p>
@@ -160,6 +160,22 @@ export default function EditEventPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
+                Location{" "}
+                <span className="text-xs text-slate-400">(optional)</span>
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Event location"
+                  className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+            {/* <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 End Date{" "}
                 <span className="text-xs text-slate-400">(optional)</span>
               </label>
@@ -169,24 +185,7 @@ export default function EditEventPage() {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Location{" "}
-              <span className="text-xs text-slate-400">(optional)</span>
-            </label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Event location"
-                className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
+            </div> */}
           </div>
 
           {/* Featured Image */}
@@ -303,7 +302,7 @@ export default function EditEventPage() {
           </div>
 
           {/* SEO Section */}
-          <div className="border-t border-slate-100 pt-4">
+          {/* <div className="border-t border-slate-100 pt-4">
             <p className="text-sm font-semibold text-slate-700 mb-3">
               SEO Settings
             </p>
@@ -348,7 +347,7 @@ export default function EditEventPage() {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 

@@ -80,7 +80,7 @@ export default function NewArticlePage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-3 h-3 text-primary-600" />
+            <FileText className="w-6 h-6 text-primary-600" />
             New Article
           </h1>
           <p className="text-slate-500 text-sm">Write a new article</p>
@@ -215,7 +215,7 @@ export default function NewArticlePage() {
         </div>
 
         {/* SEO Section */}
-        <div className="border-t border-slate-100 pt-4">
+        {/* <div className="border-t border-slate-100 pt-4">
           <p className="text-sm font-semibold text-slate-700 mb-3">
             SEO Settings
           </p>
@@ -260,7 +260,7 @@ export default function NewArticlePage() {
               />
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Actions */}

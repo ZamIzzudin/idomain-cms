@@ -286,7 +286,7 @@ export default function ArticlesPage() {
                           {item.author}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1 items-center">
                             {item.tags?.slice(0, 2).map((tag) => (
                               <span
                                 key={tag}
