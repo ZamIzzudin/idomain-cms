@@ -7,6 +7,8 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM base AS builder
+ARG NEXT_PUBLIC_API=http://localhost:8000/api/v1
+ENV NEXT_PUBLIC_API=$NEXT_PUBLIC_API
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
