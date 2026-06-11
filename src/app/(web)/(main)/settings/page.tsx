@@ -165,37 +165,6 @@ const settingGroups: SettingGroup[] = [
       },
     ],
   },
-  {
-    category: "cta",
-    title: "Call to Action",
-    icon: FileText,
-    fields: [
-      {
-        key: "cta_title",
-        label: "Judul CTA",
-        type: "text",
-        placeholder: "Bergabung Bersama Kami",
-      },
-      {
-        key: "cta_description",
-        label: "Deskripsi CTA",
-        type: "textarea",
-        placeholder: "Deskripsi CTA...",
-      },
-      {
-        key: "cta_button_text",
-        label: "Tombol CTA (Teks)",
-        type: "text",
-        placeholder: "Hubungi Kami",
-      },
-      {
-        key: "cta_button_url",
-        label: "Tombol CTA (URL)",
-        type: "url",
-        placeholder: "/contact",
-      },
-    ],
-  },
 ];
 
 function uploadImage(file: File): Promise<string> {
@@ -300,9 +269,11 @@ function ImageUpload({
 function BannerManager({
   banners,
   onChange,
+  label = "banner",
 }: {
   banners: string[];
   onChange: (banners: string[]) => void;
+  label?: string;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -355,7 +326,7 @@ function BannerManager({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">
-          {banners.length} banner terupload
+          {banners.length} {label} terupload
         </p>
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -363,7 +334,9 @@ function BannerManager({
           className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-xs font-medium disabled:opacity-50"
         >
           <Plus className="w-3.5 h-3.5" />
-          {uploading ? "Mengupload..." : "Tambah Banner"}
+          {uploading
+            ? "Mengupload..."
+            : `Tambah ${label.charAt(0).toUpperCase() + label.slice(1)}`}
         </button>
         <input
           ref={fileInputRef}
@@ -379,7 +352,9 @@ function BannerManager({
         <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
           <Image className="w-8 h-8 text-slate-300 mx-auto mb-2" />
           <p className="text-sm text-slate-400">
-            Belum ada banner. Klik &ldquo;Tambah Banner&rdquo; untuk upload.
+            Belum ada {label}. Klik &ldquo;Tambah{" "}
+            {label.charAt(0).toUpperCase() + label.slice(1)}&rdquo; untuk
+            upload.
           </p>
         </div>
       ) : (
@@ -437,7 +412,9 @@ export default function SettingsPage() {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(["general"]);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [banners, setBanners] = useState<string[]>([]);
+  const [gallery, setGallery] = useState<string[]>([]);
   const [heroExpanded, setHeroExpanded] = useState(true);
+  const [galleryExpanded, setGalleryExpanded] = useState(true);
 
   useEffect(() => {
     if (!settings) return;
@@ -448,7 +425,7 @@ export default function SettingsPage() {
     setFormData(map);
 
     const heroBanners = settings.find(
-      (s: SiteSettingItem) => s.key === "hero_banners"
+      (s: SiteSettingItem) => s.key === "hero_banners",
     );
     if (heroBanners?.value) {
       try {
@@ -458,6 +435,20 @@ export default function SettingsPage() {
         }
       } catch {
         setBanners([]);
+      }
+    }
+
+    const aboutGallery = settings.find(
+      (s: SiteSettingItem) => s.key === "about_gallery",
+    );
+    if (aboutGallery?.value) {
+      try {
+        const parsed = JSON.parse(aboutGallery.value);
+        if (Array.isArray(parsed)) {
+          setGallery(parsed);
+        }
+      } catch {
+        setGallery([]);
       }
     }
   }, [settings]);
@@ -488,6 +479,12 @@ export default function SettingsPage() {
       key: "hero_banners",
       value: banners.length > 0 ? JSON.stringify(banners) : null,
       category: "hero",
+    });
+
+    payload.push({
+      key: "about_gallery",
+      value: gallery.length > 0 ? JSON.stringify(gallery) : null,
+      category: "about",
     });
 
     saveSettings(payload, {
@@ -554,7 +551,45 @@ export default function SettingsPage() {
             </button>
             {heroExpanded && (
               <div className="px-5 pb-5 pt-2 border-t border-slate-100">
-                <BannerManager banners={banners} onChange={setBanners} />
+                <BannerManager
+                  banners={banners}
+                  onChange={setBanners}
+                  label="banner"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Gallery / Bento Section */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <button
+              onClick={() => setGalleryExpanded(!galleryExpanded)}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                  <Image className="w-4 h-4 text-primary-600" />
+                </div>
+                <span className="font-semibold text-slate-800 text-sm">
+                  Galeri
+                </span>
+                <span className="text-xs text-slate-400">
+                  Galeri di halaman About
+                </span>
+              </div>
+              {galleryExpanded ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+            {galleryExpanded && (
+              <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+                <BannerManager
+                  banners={gallery}
+                  onChange={setGallery}
+                  label="galeri"
+                />
               </div>
             )}
           </div>
