@@ -8,6 +8,9 @@ import {
   AlumniDetailService,
   AlumniApproveService,
   AlumniRejectService,
+  AlumniExportExcelService,
+  AlumniImportExcelService,
+  AlumniDownloadTemplateService,
 } from "./service";
 
 export const useAlumniList = (params: {
@@ -16,6 +19,7 @@ export const useAlumniList = (params: {
   q?: string;
   graduationYear?: number;
   specialization?: string;
+  province?: string;
   sort?: string;
   approved?: string;
 }) => {
@@ -129,6 +133,56 @@ export const useRejectAlumni = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alumni_list"] });
+    },
+  });
+};
+
+export const useExportAlumni = () => {
+  return useMutation({
+    mutationKey: ["export_alumni"],
+    mutationFn: async () => {
+      const blob = await AlumniExportExcelService();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `alumni_export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    },
+  });
+};
+
+export const useImportAlumni = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["import_alumni"],
+    mutationFn: async (file: File) => {
+      const response = await AlumniImportExcelService(file);
+      if (response.status !== 200 && response.status !== 201) throw new Error(response.message || "Failed to import");
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alumni_list"] });
+      queryClient.invalidateQueries({ queryKey: ["alumni_filter_options"] });
+    },
+  });
+};
+
+export const useDownloadTemplate = () => {
+  return useMutation({
+    mutationKey: ["download_template"],
+    mutationFn: async () => {
+      const blob = await AlumniDownloadTemplateService();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "alumni_import_template.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     },
   });
 };

@@ -1,0 +1,242 @@
+[
+  {
+    "label": "dr.",
+    "type": "prefix",
+    "description": "Dokter Umum (S1 Kedokteran)"
+  },
+  {
+    "label": "Sp.",
+    "type": "suffix",
+    "description": "Spesialis (contoh: Sp.PD, Sp.KK, Sp.M)"
+  },
+  {
+    "label": "Sp.PD",
+    "type": "suffix",
+    "description": "Spesialis Penyakit Dalam"
+  },
+  {
+    "label": "Sp.KK",
+    "type": "suffix",
+    "description": "Spesialis Kulit dan Kelamin"
+  },
+  {
+    "label": "Sp.M",
+    "type": "suffix",
+    "description": "Spesialis Mata"
+  },
+  {
+    "label": "Sp.THT-KL",
+    "type": "suffix",
+    "description": "Spesialis Telinga Hidung Tenggorokan - Bedah Kepala Leher"
+  },
+  {
+    "label": "Sp.An",
+    "type": "suffix",
+    "description": "Spesialis Anestesiologi"
+  },
+  {
+    "label": "Sp.OG",
+    "type": "suffix",
+    "description": "Spesialis Obstetri dan Ginekologi"
+  },
+  {
+    "label": "Sp.A",
+    "type": "suffix",
+    "description": "Spesialis Anak"
+  },
+  {
+    "label": "Sp.B",
+    "type": "suffix",
+    "description": "Spesialis Bedah Umum"
+  },
+  {
+    "label": "Sp.OT",
+    "type": "suffix",
+    "description": "Spesialis Orthopedi dan Traumatologi"
+  },
+  {
+    "label": "Sp.JP",
+    "type": "suffix",
+    "description": "Spesialis Jantung dan Pembuluh Darah"
+  },
+  {
+    "label": "Sp.N",
+    "type": "suffix",
+    "description": "Spesialis Neurologi"
+  },
+  {
+    "label": "Sp.KJ",
+    "type": "suffix",
+    "description": "Spesialis Kedokteran Jiwa"
+  },
+  {
+    "label": "Sp.P",
+    "type": "suffix",
+    "description": "Spesialis Pulmonologi"
+  },
+  {
+    "label": "Sp.RM",
+    "type": "suffix",
+    "description": "Spesialis Radiologi"
+  },
+  {
+    "label": "Sp.PA",
+    "type": "suffix",
+    "description": "Spesialis Patologi Anatomi"
+  },
+  {
+    "label": "Sp.PK",
+    "type": "suffix",
+    "description": "Spesialis Patologi Klinik"
+  },
+  {
+    "label": "Sp.F",
+    "type": "suffix",
+    "description": "Spesialis Forensik"
+  },
+  {
+    "label": "Sp.BS",
+    "type": "suffix",
+    "description": "Spesialis Bedah Saraf"
+  },
+  {
+    "label": "Sp.U",
+    "type": "suffix",
+    "description": "Spesialis Urologi"
+  },
+  {
+    "label": "Sp.BP",
+    "type": "suffix",
+    "description": "Spesialis Bedah Plastik"
+  },
+  {
+    "label": "Sp.BTKV",
+    "type": "suffix",
+    "description": "Spesialis Bedah Toraks dan Kardiovaskular"
+  },
+  {
+    "label": "Sp.KFR",
+    "type": "suffix",
+    "description": "Spesialis Kedokteran Fisik dan Rehabilitasi"
+  },
+  {
+    "label": "Sp.Onk.Rad",
+    "type": "suffix",
+    "description": "Spesialis Onkologi Radiasi"
+  },
+  {
+    "label": "Sp.And",
+    "type": "suffix",
+    "description": "Spesialis Andrologi"
+  },
+  {
+    "label": "Subsp.",
+    "type": "suffix",
+    "description": "Sub-spesialis/Konsultan (contoh: Subsp.GE, Subsp.HA)"
+  },
+  {
+    "label": "Subsp.GE",
+    "type": "suffix",
+    "description": "Konsultan Gastroenterologi"
+  },
+  {
+    "label": "Subsp.HA",
+    "type": "suffix",
+    "description": "Konsultan Hematologi"
+  },
+  {
+    "label": "Subsp.NE",
+    "type": "suffix",
+    "description": "Konsultan Nefrologi"
+  },
+  {
+    "label": "Subsp.EN",
+    "type": "suffix",
+    "description": "Konsultan Endokrinologi"
+  },
+  {
+    "label": "Subsp.RH",
+    "type": "suffix",
+    "description": "Konsultan Rheumatologi"
+  },
+  {
+    "label": "Subsp.AI",
+    "type": "suffix",
+    "description": "Konsultan Alergi dan Imunologi"
+  },
+  {
+    "label": "Subsp.INF",
+    "type": "suffix",
+    "description": "Konsultan Penyakit Infeksi"
+  },
+  {
+    "label": "Subsp.GE.A",
+    "type": "suffix",
+    "description": "Konsultan Gastroenterologi Anak"
+  },
+  {
+    "label": "Subsp.NE.A",
+    "type": "suffix",
+    "description": "Konsultan Nefrologi Anak"
+  },
+  {
+    "label": "Subsp.HO.A",
+    "type": "suffix",
+    "description": "Konsultan Hematologi Onkologi Anak"
+  },
+  {
+    "label": "Subsp.NA",
+    "type": "suffix",
+    "description": "Konsultan Neurologi Anak"
+  },
+  {
+    "label": "drg.",
+    "type": "prefix",
+    "description": "Dokter Gigi (S1 Kedokteran Gigi)"
+  },
+  {
+    "label": "Sp.Ort",
+    "type": "suffix",
+    "description": "Spesialis Ortodonti"
+  },
+  {
+    "label": "Sp.Pros",
+    "type": "suffix",
+    "description": "Spesialis Prosthodonti"
+  },
+  {
+    "label": "Sp.Perio",
+    "type": "suffix",
+    "description": "Spesialis Periodonti"
+  },
+  {
+    "label": "Sp.KG",
+    "type": "suffix",
+    "description": "Spesialis Konservasi Gigi"
+  },
+  {
+    "label": "Sp.BM",
+    "type": "suffix",
+    "description": "Spesialis Bedah Mulut"
+  },
+  {
+    "label": "Sp.Pedodonti",
+    "type": "suffix",
+    "description": "Spesialis Kedokteran Gigi Anak"
+  },
+  {
+    "label": "Sp.RKG",
+    "type": "suffix",
+    "description": "Spesialis Radiologi Kedokteran Gigi"
+  },
+  {
+    "label": "Sp.Perl.",
+    "type": "suffix",
+    "description": "Spesialis Kedokteran Gigi Pencegahan"
+  },
+  {
+    "label": "Prof.",
+    "type": "prefix",
+    "description": "Profesor (gelar akademik)"
+  }
+]

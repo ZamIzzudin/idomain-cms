@@ -26,10 +26,14 @@ export default function NewArticlePage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024)
-      return Notification("error", "File size must be under 5MB");
-    if (!file.type.startsWith("image/"))
-      return Notification("error", "Only images are allowed");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
+    }
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    if (file.size > 10 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    }
     setFeaturedImageFile(file);
     setFeaturedImage(URL.createObjectURL(file));
   };
@@ -130,10 +134,10 @@ export default function NewArticlePage() {
               <div className="flex flex-col items-center gap-2">
                 <Upload className="w-6 h-6 text-slate-400" />
                 <span className="text-xs text-slate-500">
-                  Click to upload image
+                  Klik untuk upload gambar
                 </span>
                 <span className="text-xs text-slate-400">
-                  Max 5MB (JPG, PNG, WebP)
+                  JPG, PNG, WebP, GIF (Maks 10 MB)
                 </span>
               </div>
               <input

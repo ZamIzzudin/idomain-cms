@@ -1,18 +1,34 @@
 import AxiosClient from "@/lib/axios";
 
+export interface WorkHistoryItem {
+  id: number;
+  alumniId: number;
+  institutionName: string;
+  startYear: number;
+  endYear: number | null;
+  province: string | null;
+  city: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AlumniItem {
   id: number;
   name: string;
   email: string | null;
   contactNumber: string | null;
   graduationYear: number;
-  degree: string | null;
+  batch: number | null;
+  degreePrefix: string | null;
+  degreeSuffix: string | null;
   specialization: string | null;
-  institution: string | null;
+  province: string | null;
+  city: string | null;
   photo: string | null;
   photoPublicId: string | null;
   status: number;
   isApproved: boolean;
+  workHistories: WorkHistoryItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +47,7 @@ export interface FilterOptionsResponse {
   data: {
     years: number[];
     specializations: string[];
+    provinces: string[];
   };
 }
 
@@ -40,6 +57,7 @@ export async function AlumniListService(params: {
   q?: string;
   graduationYear?: number;
   specialization?: string;
+  province?: string;
   sort?: string;
   approved?: string;
 }) {
@@ -56,7 +74,7 @@ export async function AlumniFilterOptionsService() {
     const { data: response } = await AxiosClient.get("/alumni/filter-options");
     return response as FilterOptionsResponse;
   } catch (error: any) {
-    return { status: 500, data: { years: [], specializations: [] } };
+    return { status: 500, data: { years: [], specializations: [], provinces: [] } };
   }
 }
 
@@ -66,10 +84,13 @@ export async function AlumniCreateService(payload: {
   email?: string | null;
   contactNumber?: string | null;
   password?: string | null;
-  degree?: string | null;
+  degreePrefix?: string | null;
+  degreeSuffix?: string | null;
   specialization?: string | null;
-  institution?: string | null;
+  province?: string | null;
+  city?: string | null;
   photo?: File | null;
+  batch?: number | null;
 }) {
   try {
     const formData = new FormData();
@@ -78,10 +99,13 @@ export async function AlumniCreateService(payload: {
     if (payload.email) formData.append("email", payload.email);
     if (payload.contactNumber) formData.append("contactNumber", payload.contactNumber);
     if (payload.password) formData.append("password", payload.password);
-    if (payload.degree) formData.append("degree", payload.degree);
+    if (payload.degreePrefix) formData.append("degreePrefix", payload.degreePrefix);
+    if (payload.degreeSuffix) formData.append("degreeSuffix", payload.degreeSuffix);
     if (payload.specialization) formData.append("specialization", payload.specialization);
-    if (payload.institution) formData.append("institution", payload.institution);
+    if (payload.province) formData.append("province", payload.province);
+    if (payload.city) formData.append("city", payload.city);
     if (payload.photo) formData.append("photo", payload.photo);
+    if (payload.batch) formData.append("batch", String(payload.batch));
 
     const { data: response } = await AxiosClient.post("/alumni", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -100,11 +124,14 @@ export async function AlumniUpdateService(
     email?: string | null;
     contactNumber?: string | null;
     password?: string | null;
-    degree?: string | null;
+    degreePrefix?: string | null;
+    degreeSuffix?: string | null;
     specialization?: string | null;
-    institution?: string | null;
+    province?: string | null;
+    city?: string | null;
     photo?: File | null;
     removePhoto?: boolean;
+    batch?: number | null;
   }
 ) {
   try {
@@ -114,11 +141,14 @@ export async function AlumniUpdateService(
     if (payload.email !== undefined) formData.append("email", payload.email || "");
     if (payload.contactNumber !== undefined) formData.append("contactNumber", payload.contactNumber || "");
     if (payload.password) formData.append("password", payload.password);
-    if (payload.degree !== undefined) formData.append("degree", payload.degree || "");
+    if (payload.degreePrefix !== undefined) formData.append("degreePrefix", payload.degreePrefix || "");
+    if (payload.degreeSuffix !== undefined) formData.append("degreeSuffix", payload.degreeSuffix || "");
     if (payload.specialization !== undefined) formData.append("specialization", payload.specialization || "");
-    if (payload.institution !== undefined) formData.append("institution", payload.institution || "");
+    if (payload.province !== undefined) formData.append("province", payload.province || "");
+    if (payload.city !== undefined) formData.append("city", payload.city || "");
     if (payload.photo) formData.append("photo", payload.photo);
     if (payload.removePhoto) formData.append("removePhoto", "true");
+    if (payload.batch !== undefined) formData.append("batch", payload.batch ? String(payload.batch) : "");
 
     const { data: response } = await AxiosClient.put(`/alumni/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -162,5 +192,41 @@ export async function AlumniRejectService(id: number) {
     return response;
   } catch (error: any) {
     return error?.response?.data || { status: 400, message: "Failed to reject alumni" };
+  }
+}
+
+export async function AlumniExportExcelService() {
+  try {
+    const { data: response } = await AxiosClient.get("/alumni/export", {
+      responseType: "blob",
+    });
+    return response;
+  } catch (error: any) {
+    return error?.response?.data || { status: 400, message: "Failed to export alumni" };
+  }
+}
+
+export async function AlumniImportExcelService(file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const { data: response } = await AxiosClient.post("/alumni/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  } catch (error: any) {
+    return error?.response?.data || { status: 400, message: "Failed to import alumni" };
+  }
+}
+
+export async function AlumniDownloadTemplateService() {
+  try {
+    const { data: response } = await AxiosClient.get("/alumni/import-template", {
+      responseType: "blob",
+    });
+    return response;
+  } catch (error: any) {
+    return error?.response?.data || { status: 400, message: "Failed to download template" };
   }
 }

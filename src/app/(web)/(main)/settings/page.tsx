@@ -90,12 +90,6 @@ const settingGroups: SettingGroup[] = [
         placeholder: "Visi organisasi...",
       },
       {
-        key: "about_misi",
-        label: "Misi",
-        type: "textarea",
-        placeholder: "Misi organisasi (pisahkan dengan baris baru)...",
-      },
-      {
         key: "about_image",
         label: "Gambar About",
         type: "image",
@@ -201,12 +195,14 @@ function ImageUpload({
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      Notification("error", "Hanya file gambar yang diizinkan");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/x-icon", "image/vnd.microsoft.icon"];
+    if (!allowedTypes.includes(file.type)) {
+      Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau ICO.");
       return;
     }
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     if (file.size > 10 * 1024 * 1024) {
-      Notification("error", "Ukuran file maksimal 10MB");
+      Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
       return;
     }
 
@@ -285,10 +281,15 @@ function BannerManager({
     setUploading(true);
     try {
       const newBanners = [...banners];
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
       for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) continue;
+        if (!allowedTypes.includes(file.type)) {
+          Notification("error", `${file.name}: format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.`);
+          continue;
+        }
         if (file.size > 10 * 1024 * 1024) {
-          Notification("error", `${file.name} melebihi batas 10MB`);
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+          Notification("error", `${file.name} (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
           continue;
         }
         const url = await uploadImage(file);
@@ -406,13 +407,137 @@ function BannerManager({
   );
 }
 
+interface MisiItem {
+  title: string;
+  subtitle: string;
+}
+
+function MisiManager({
+  items,
+  onChange,
+}: {
+  items: MisiItem[];
+  onChange: (items: MisiItem[]) => void;
+}) {
+  const handleAdd = () => {
+    onChange([...items, { title: "", subtitle: "" }]);
+  };
+
+  const handleRemove = (index: number) => {
+    onChange(items.filter((_, i) => i !== index));
+  };
+
+  const handleUpdate = (index: number, field: "title" | "subtitle", value: string) => {
+    const updated = [...items];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange(updated);
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...items];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    onChange(updated);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === items.length - 1) return;
+    const updated = [...items];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    onChange(updated);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500">
+          {items.length} misi
+        </p>
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-xs font-medium"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Tambah Misi
+        </button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
+          <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-sm text-slate-400">
+            Belum ada misi. Klik &ldquo;Tambah Misi&rdquo; untuk menambahkan.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-2 bg-slate-50 rounded-lg p-3 border border-slate-100 group"
+            >
+              <div className="flex flex-col gap-0.5 shrink-0 pt-1">
+                <span className="text-xs font-medium text-slate-400 text-center w-5">
+                  {index + 1}
+                </span>
+                <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleMoveUp(index)}
+                    disabled={index === 0}
+                    className="w-5 h-4 bg-white rounded flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 border border-slate-200"
+                    title="Geser ke atas"
+                  >
+                    <ChevronUp className="w-3 h-3 text-slate-600" />
+                  </button>
+                  <button
+                    onClick={() => handleMoveDown(index)}
+                    disabled={index === items.length - 1}
+                    className="w-5 h-4 bg-white rounded flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 border border-slate-200"
+                    title="Geser ke bawah"
+                  >
+                    <ChevronDown className="w-3 h-3 text-slate-600" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <input
+                  type="text"
+                  value={item.title}
+                  onChange={(e) => handleUpdate(index, "title", e.target.value)}
+                  placeholder="Judul misi (contoh: Memperkuat Jejaring)"
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="text"
+                  value={item.subtitle}
+                  onChange={(e) => handleUpdate(index, "subtitle", e.target.value)}
+                  placeholder="Deskripsi singkat misi..."
+                  className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <button
+                onClick={() => handleRemove(index)}
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors mt-1"
+                title="Hapus"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { data: settings, isLoading } = useSiteSettings();
   const { mutate: saveSettings, isPending } = useUpdateSiteSettings();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["general"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(["general", "about"]);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [banners, setBanners] = useState<string[]>([]);
   const [gallery, setGallery] = useState<string[]>([]);
+  const [misiItems, setMisiItems] = useState<MisiItem[]>([]);
   const [heroExpanded, setHeroExpanded] = useState(true);
   const [galleryExpanded, setGalleryExpanded] = useState(true);
 
@@ -451,6 +576,29 @@ export default function SettingsPage() {
         setGallery([]);
       }
     }
+
+    const aboutMisi = settings.find(
+      (s: SiteSettingItem) => s.key === "about_misi",
+    );
+    if (aboutMisi?.value) {
+      try {
+        const parsed = JSON.parse(aboutMisi.value);
+        if (Array.isArray(parsed)) {
+          setMisiItems(parsed);
+        }
+      } catch {
+        // Legacy format: plain text with newlines, parse with " — " separator
+        const lines = aboutMisi.value.split("\n").filter(Boolean);
+        const parsed = lines.map((line: string) => {
+          const parts = line.split(" — ");
+          return {
+            title: parts[0]?.trim() || "",
+            subtitle: parts[1]?.trim() || line.trim(),
+          };
+        });
+        setMisiItems(parsed);
+      }
+    }
   }, [settings]);
 
   const toggleGroup = (category: string) => {
@@ -484,6 +632,12 @@ export default function SettingsPage() {
     payload.push({
       key: "about_gallery",
       value: gallery.length > 0 ? JSON.stringify(gallery) : null,
+      category: "about",
+    });
+
+    payload.push({
+      key: "about_misi",
+      value: misiItems.length > 0 ? JSON.stringify(misiItems) : null,
       category: "about",
     });
 
@@ -528,79 +682,13 @@ export default function SettingsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {/* Hero / Banner Section - Special UI */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <button
-              onClick={() => setHeroExpanded(!heroExpanded)}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                  <Image className="w-4 h-4 text-primary-600" />
-                </div>
-                <span className="font-semibold text-slate-800 text-sm">
-                  Hero / Banner
-                </span>
-                <span className="text-xs text-slate-400">Slideshow Banner</span>
-              </div>
-              {heroExpanded ? (
-                <ChevronUp className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              )}
-            </button>
-            {heroExpanded && (
-              <div className="px-5 pb-5 pt-2 border-t border-slate-100">
-                <BannerManager
-                  banners={banners}
-                  onChange={setBanners}
-                  label="banner"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Gallery / Bento Section */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <button
-              onClick={() => setGalleryExpanded(!galleryExpanded)}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                  <Image className="w-4 h-4 text-primary-600" />
-                </div>
-                <span className="font-semibold text-slate-800 text-sm">
-                  Galeri
-                </span>
-                <span className="text-xs text-slate-400">
-                  Galeri di halaman About
-                </span>
-              </div>
-              {galleryExpanded ? (
-                <ChevronUp className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              )}
-            </button>
-            {galleryExpanded && (
-              <div className="px-5 pb-5 pt-2 border-t border-slate-100">
-                <BannerManager
-                  banners={gallery}
-                  onChange={setGallery}
-                  label="galeri"
-                />
-              </div>
-            )}
-          </div>
-
-          {settingGroups.map((group) => {
+          {settingGroups.map((group, idx) => {
             const Icon = group.icon;
             const isExpanded = expandedGroups.includes(group.category);
 
             return (
+              <div key={group.category} className="space-y-3">
               <div
-                key={group.category}
                 className="bg-white rounded-xl border border-slate-200 overflow-hidden"
               >
                 {/* Group Header */}
@@ -663,8 +751,86 @@ export default function SettingsPage() {
                         )}
                       </div>
                     ))}
+
+                    {group.category === "about" && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Misi
+                        </label>
+                        <MisiManager items={misiItems} onChange={setMisiItems} />
+                      </div>
+                    )}
                   </div>
                 )}
+              </div>
+
+              {group.category === "general" && (
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <button
+                    onClick={() => setHeroExpanded(!heroExpanded)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                        <Image className="w-4 h-4 text-primary-600" />
+                      </div>
+                      <span className="font-semibold text-slate-800 text-sm">
+                        Hero / Banner
+                      </span>
+                      <span className="text-xs text-slate-400">Slideshow Banner</span>
+                    </div>
+                    {heroExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+                  {heroExpanded && (
+                    <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+                      <BannerManager
+                        banners={banners}
+                        onChange={setBanners}
+                        label="banner"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {group.category === "about" && (
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <button
+                    onClick={() => setGalleryExpanded(!galleryExpanded)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                        <Image className="w-4 h-4 text-primary-600" />
+                      </div>
+                      <span className="font-semibold text-slate-800 text-sm">
+                        Galeri
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        Galeri di halaman About
+                      </span>
+                    </div>
+                    {galleryExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+                  {galleryExpanded && (
+                    <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+                      <BannerManager
+                        banners={gallery}
+                        onChange={setGallery}
+                        label="galeri"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               </div>
             );
           })}

@@ -44,15 +44,22 @@ export default function QuillEditor({ content, onChange, placeholder }: QuillEdi
     const quill = this.quill;
     const input = document.createElement("input");
     input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
+    input.setAttribute("accept", "image/jpeg,image/png,image/webp,image/gif");
     input.click();
 
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
 
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
+        return;
+      }
+
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
       if (file.size > 10 * 1024 * 1024) {
-        Notification("error", "Image size must be under 10MB");
+        Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
         return;
       }
 

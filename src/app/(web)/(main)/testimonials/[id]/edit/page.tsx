@@ -32,10 +32,14 @@ export default function EditTestimonialPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024)
-      return Notification("error", "File size must be under 5MB");
-    if (!file.type.startsWith("image/"))
-      return Notification("error", "Only images are allowed");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
+    }
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    if (file.size > 10 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    }
     setPhotoFile(file);
     setRemovePhoto(false);
     setPhoto(URL.createObjectURL(file));

@@ -1,10 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, X, GraduationCap, Eye, EyeOff } from "lucide-react";
 import Notification from "@/components/Notification";
 import { useCreateAlumni } from "../hook";
+
+import degreeData from "@/data/degree.json";
+import specializationData from "@/data/specialization.json";
+import locationData from "@/data/location.json";
+
+const degreePrefixes = degreeData.filter((d) => d.type === "prefix");
+const degreeSuffixes = degreeData.filter((d) => d.type === "suffix");
+const provinces = locationData.data.map((l: any) => l.provinsi);
+const getProvinceCities = (prov: string) =>
+  (locationData.data as any[]).find((l: any) => l.provinsi === prov)?.kota ||
+  [];
 
 interface FormData {
   name: string;
@@ -12,9 +23,17 @@ interface FormData {
   contactNumber: string;
   password: string;
   graduationYear: string;
-  degree: string;
+  batch: string;
+  degreePrefix: string;
+  degreePrefixCustom: string;
+  degreeSuffix: string;
+  degreeSuffixCustom: string;
   specialization: string;
-  institution: string;
+  specializationCustom: string;
+  province: string;
+  provinceCustom: string;
+  city: string;
+  cityCustom: string;
   photo: string;
   photoFile: File | null;
   removePhoto: boolean;
@@ -26,9 +45,17 @@ const emptyForm: FormData = {
   contactNumber: "",
   password: "",
   graduationYear: "",
-  degree: "",
+  batch: "",
+  degreePrefix: "",
+  degreePrefixCustom: "",
+  degreeSuffix: "",
+  degreeSuffixCustom: "",
   specialization: "",
-  institution: "",
+  specializationCustom: "",
+  province: "",
+  provinceCustom: "",
+  city: "",
+  cityCustom: "",
   photo: "",
   photoFile: null,
   removePhoto: false,
@@ -41,6 +68,16 @@ export default function NewAlumniPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate: createAlumni, isPending } = useCreateAlumni();
 
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (form.province && form.province !== "Lainnya") {
+      setCities(getProvinceCities(form.province));
+    } else {
+      setCities([]);
+    }
+  }, [form.province]);
+
   const updateField = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -48,10 +85,20 @@ export default function NewAlumniPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024)
-      return Notification("error", "File size must be under 5MB");
-    if (!file.type.startsWith("image/"))
-      return Notification("error", "Only images are allowed");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      return Notification(
+        "error",
+        "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.",
+      );
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      return Notification(
+        "error",
+        `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`,
+      );
+    }
     setForm((prev) => ({
       ...prev,
       photoFile: file,
@@ -61,9 +108,25 @@ export default function NewAlumniPage() {
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.graduationYear) {
+    if (!form.name || !form.batch || !form.graduationYear) {
       return Notification("error", "Name and graduation year are required");
     }
+
+    const finalDegreePrefix =
+      form.degreePrefix === "Lainnya"
+        ? form.degreePrefixCustom
+        : form.degreePrefix;
+    const finalDegreeSuffix =
+      form.degreeSuffix === "Lainnya"
+        ? form.degreeSuffixCustom
+        : form.degreeSuffix;
+    const finalSpecialization =
+      form.specialization === "Lainnya"
+        ? form.specializationCustom
+        : form.specialization;
+    const finalProvince =
+      form.province === "Lainnya" ? form.provinceCustom : form.province;
+    const finalCity = form.city === "Lainnya" ? form.cityCustom : form.city;
 
     createAlumni(
       {
@@ -72,9 +135,12 @@ export default function NewAlumniPage() {
         contactNumber: form.contactNumber || null,
         password: form.password || null,
         graduationYear: parseInt(form.graduationYear),
-        degree: form.degree || null,
-        specialization: form.specialization || null,
-        institution: form.institution || null,
+        batch: form.batch ? parseInt(form.batch) : null,
+        degreePrefix: finalDegreePrefix || null,
+        degreeSuffix: finalDegreeSuffix || null,
+        specialization: finalSpecialization || null,
+        province: finalProvince || null,
+        city: finalCity || null,
         photo: form.photoFile,
       },
       {
@@ -112,15 +178,77 @@ export default function NewAlumniPage() {
       <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Full Name *
+            Gelar Depan
           </label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            placeholder="Dr. John Doe"
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
+          <div className="flex gap-2 items-end">
+            <div className="w-48 shrink-0">
+              <select
+                value={form.degreePrefix}
+                onChange={(e) => updateField("degreePrefix", e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">-- Pilih --</option>
+                {degreePrefixes.map((d: any) => (
+                  <option key={d.label} value={d.label}>
+                    {d.label}
+                  </option>
+                ))}
+                <option value="Lainnya">Lainnya</option>
+              </select>
+              {form.degreePrefix === "Lainnya" && (
+                <input
+                  type="text"
+                  value={form.degreePrefixCustom}
+                  onChange={(e) =>
+                    updateField("degreePrefixCustom", e.target.value)
+                  }
+                  placeholder="Gelar depan"
+                  className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              )}
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Nama Lengkap *
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                placeholder="Nama lengkap"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className="w-48 shrink-0">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Gelar Belakang
+              </label>
+              <select
+                value={form.degreeSuffix}
+                onChange={(e) => updateField("degreeSuffix", e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">-- Pilih --</option>
+                {degreeSuffixes.map((d: any) => (
+                  <option key={d.label} value={d.label}>
+                    {d.label}
+                  </option>
+                ))}
+                <option value="Lainnya">Lainnya</option>
+              </select>
+              {form.degreeSuffix === "Lainnya" && (
+                <input
+                  type="text"
+                  value={form.degreeSuffixCustom}
+                  onChange={(e) =>
+                    updateField("degreeSuffixCustom", e.target.value)
+                  }
+                  placeholder="Gelar belakang"
+                  className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -145,11 +273,147 @@ export default function NewAlumniPage() {
               value={form.contactNumber}
               onChange={(e) => updateField("contactNumber", e.target.value)}
               placeholder="+62 812-3456-7890"
+              maxLength={14}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
 
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tahun Kelulusan *
+            </label>
+            <input
+              type="number"
+              value={form.graduationYear}
+              onChange={(e) => updateField("graduationYear", e.target.value)}
+              placeholder="2020"
+              min={1900}
+              max={2100}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tahun Masuk *
+            </label>
+            <input
+              type="number"
+              value={form.batch}
+              onChange={(e) => updateField("batch", e.target.value)}
+              placeholder="2017"
+              min={1900}
+              max={2100}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Spesialisasi
+            </label>
+            <select
+              value={form.specialization}
+              onChange={(e) => updateField("specialization", e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">-- Pilih Spesialisasi --</option>
+              {specializationData.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+              <option value="Lainnya">Lainnya (input manual)</option>
+            </select>
+            {form.specialization === "Lainnya" && (
+              <input
+                type="text"
+                value={form.specializationCustom}
+                onChange={(e) =>
+                  updateField("specializationCustom", e.target.value)
+                }
+                placeholder="Masukkan spesialisasi"
+                className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Provinsi
+            </label>
+            <select
+              value={form.province}
+              onChange={(e) => {
+                updateField("province", e.target.value);
+                updateField("city", "");
+              }}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">-- Pilih Provinsi --</option>
+              {provinces.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+              <option value="Lainnya">Lainnya (input manual)</option>
+            </select>
+            {form.province === "Lainnya" && (
+              <input
+                type="text"
+                value={form.provinceCustom}
+                onChange={(e) => updateField("provinceCustom", e.target.value)}
+                placeholder="Masukkan provinsi"
+                className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Kota / Kabupaten
+            </label>
+            {form.province &&
+            form.province !== "Lainnya" &&
+            cities.length > 0 ? (
+              <>
+                <select
+                  value={form.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">-- Pilih Kota/Kab --</option>
+                  {cities.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  <option value="Lainnya">Lainnya (input manual)</option>
+                </select>
+                {form.city === "Lainnya" && (
+                  <input
+                    type="text"
+                    value={form.cityCustom}
+                    onChange={(e) => updateField("cityCustom", e.target.value)}
+                    placeholder="Masukkan kota/kabupaten"
+                    className="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                )}
+              </>
+            ) : (
+              <input
+                type="text"
+                value={form.cityCustom}
+                onChange={(e) => updateField("cityCustom", e.target.value)}
+                placeholder="Masukkan kota/kabupaten"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            )}
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Password
@@ -179,65 +443,13 @@ export default function NewAlumniPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Graduation Year *
-            </label>
-            <input
-              type="number"
-              value={form.graduationYear}
-              onChange={(e) => updateField("graduationYear", e.target.value)}
-              placeholder="2020"
-              min={1900}
-              max={2100}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Degree
-            </label>
-            <input
-              type="text"
-              value={form.degree}
-              onChange={(e) => updateField("degree", e.target.value)}
-              placeholder="S1, Sp.PD, etc."
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-        </div>
-
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Specialization
+            Foto
           </label>
-          <input
-            type="text"
-            value={form.specialization}
-            onChange={(e) => updateField("specialization", e.target.value)}
-            placeholder="Cardiology, Neurology, etc."
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Institution
-          </label>
-          <input
-            type="text"
-            value={form.institution}
-            onChange={(e) => updateField("institution", e.target.value)}
-            placeholder="RSUD, hospital, clinic name"
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Photo
-          </label>
+          <p className="text-xs text-slate-400 mb-2">
+            Format: JPG, PNG, WebP, GIF. Maks: 10 MB.
+          </p>
           {form.photo ? (
             <div className="relative inline-block">
               <img
@@ -265,10 +477,10 @@ export default function NewAlumniPage() {
               <div className="flex flex-col items-center gap-2">
                 <Upload className="w-6 h-6 text-slate-400" />
                 <span className="text-xs text-slate-500">
-                  Click to upload image
+                  Klik untuk upload foto
                 </span>
                 <span className="text-xs text-slate-400">
-                  Max 5MB (JPG, PNG, WebP)
+                  JPG, PNG, WebP, GIF (Maks 10 MB)
                 </span>
               </div>
               <input
