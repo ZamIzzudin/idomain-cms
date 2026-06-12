@@ -67,19 +67,44 @@ const settingGroups: SettingGroup[] = [
     ],
   },
   {
+    category: "home_about",
+    title: "Tentang Kami (Beranda)",
+    icon: FileText,
+    fields: [
+      {
+        key: "home_about_title",
+        label: "Judul",
+        type: "text",
+        placeholder: "Tentang IDOMAIN",
+      },
+      {
+        key: "home_about_description",
+        label: "Deskripsi",
+        type: "textarea",
+        placeholder: "Deskripsi singkat untuk section tentang di beranda...",
+      },
+      {
+        key: "home_about_image",
+        label: "Gambar",
+        type: "image",
+        placeholder: "Upload gambar untuk beranda...",
+      },
+    ],
+  },
+  {
     category: "about",
-    title: "Tentang / Visi Misi",
+    title: "Tentang Kami (Halaman About)",
     icon: FileText,
     fields: [
       {
         key: "about_title",
-        label: "Judul Tentang",
+        label: "Judul",
         type: "text",
         placeholder: "Tentang IDOMAIN",
       },
       {
         key: "about_description",
-        label: "Deskripsi Tentang",
+        label: "Deskripsi",
         type: "textarea",
         placeholder: "Deskripsi tentang organisasi...",
       },
@@ -91,7 +116,7 @@ const settingGroups: SettingGroup[] = [
       },
       {
         key: "about_image",
-        label: "Gambar About",
+        label: "Gambar",
         type: "image",
         placeholder: "Upload gambar about...",
       },
@@ -533,7 +558,7 @@ function MisiManager({
 export default function SettingsPage() {
   const { data: settings, isLoading } = useSiteSettings();
   const { mutate: saveSettings, isPending } = useUpdateSiteSettings();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["general", "about"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(["general", "home_about", "about"]);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [banners, setBanners] = useState<string[]>([]);
   const [gallery, setGallery] = useState<string[]>([]);
