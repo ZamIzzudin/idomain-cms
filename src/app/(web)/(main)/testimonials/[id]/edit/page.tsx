@@ -37,8 +37,8 @@ export default function EditTestimonialPage() {
       return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
-      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    if (file.size > 1 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
     }
     setPhotoFile(file);
     setRemovePhoto(false);

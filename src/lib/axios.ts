@@ -36,6 +36,10 @@ class ApiClient {
         if (token && config.headers) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
+        // Let the browser set the correct Content-Type with boundary for FormData
+        if (config.data instanceof FormData && config.headers) {
+          delete config.headers["Content-Type"];
+        }
         return config;
       },
       (error) => {

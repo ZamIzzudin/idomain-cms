@@ -10,6 +10,8 @@ import { useCreateEvent } from "../hook";
 export default function NewEventPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [author, setAuthor] = useState("");
@@ -18,6 +20,7 @@ export default function NewEventPage() {
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("DRAFT");
+  const [publishedAt, setPublishedAt] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [metaKeywords, setMetaKeywords] = useState("");
@@ -25,6 +28,14 @@ export default function NewEventPage() {
   const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate: createEvent, isPending } = useCreateEvent();
+
+  const generateSlug = (text: string) =>
+    text.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
+
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    if (!slugEdited) setSlug(generateSlug(val));
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,8 +45,8 @@ export default function NewEventPage() {
       return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
-      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    if (file.size > 1 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
     }
     setFeaturedImageFile(file);
     setFeaturedImage(URL.createObjectURL(file));
@@ -54,6 +65,7 @@ export default function NewEventPage() {
     createEvent(
       {
         title,
+        slug: slug || undefined,
         content: content || undefined,
         excerpt: excerpt || undefined,
         author: author || undefined,
@@ -62,6 +74,7 @@ export default function NewEventPage() {
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
         location: location || undefined,
         status: status || undefined,
+        publishedAt: publishedAt || undefined,
         metaTitle: metaTitle || undefined,
         metaDescription: metaDescription || undefined,
         metaKeywords: metaKeywords ? parseTags(metaKeywords) : undefined,
@@ -106,8 +119,22 @@ export default function NewEventPage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Event title"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Slug
+            <span className="text-xs text-slate-400 ml-1">(otomatis dari judul, bisa diedit)</span>
+          </label>
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }}
+            placeholder="event-slug"
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
@@ -185,7 +212,7 @@ export default function NewEventPage() {
                   Klik untuk upload gambar
                 </span>
                 <span className="text-xs text-slate-400">
-                  JPG, PNG, WebP, GIF (Maks 10 MB)
+                  JPG, PNG, WebP, GIF (Maks 1 MB)
                 </span>
               </div>
               <input
@@ -223,7 +250,7 @@ export default function NewEventPage() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Author
@@ -249,6 +276,18 @@ export default function NewEventPage() {
               <option value="PUBLISHED">Published</option>
               <option value="ARCHIVED">Archived</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tanggal Publish
+              <span className="text-xs text-slate-400 ml-1">(kosongkan untuk otomatis)</span>
+            </label>
+            <input
+              type="datetime-local"
+              value={publishedAt}
+              onChange={(e) => setPublishedAt(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
           </div>
         </div>
 

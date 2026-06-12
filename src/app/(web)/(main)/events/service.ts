@@ -74,6 +74,7 @@ export async function EventFilterOptionsService() {
 
 export async function EventCreateService(payload: {
   title: string;
+  slug?: string;
   content?: string;
   excerpt?: string;
   author?: string;
@@ -82,6 +83,7 @@ export async function EventCreateService(payload: {
   endDate?: string;
   location?: string;
   status?: string;
+  publishedAt?: string;
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string[];
@@ -90,6 +92,7 @@ export async function EventCreateService(payload: {
   try {
     const formData = new FormData();
     formData.append("title", payload.title);
+    if (payload.slug) formData.append("slug", payload.slug);
     if (payload.content) formData.append("content", payload.content);
     if (payload.excerpt) formData.append("excerpt", payload.excerpt);
     if (payload.author) formData.append("author", payload.author);
@@ -98,6 +101,7 @@ export async function EventCreateService(payload: {
     if (payload.endDate) formData.append("endDate", payload.endDate);
     if (payload.location) formData.append("location", payload.location);
     if (payload.status) formData.append("status", payload.status);
+    if (payload.publishedAt) formData.append("publishedAt", payload.publishedAt);
     if (payload.metaTitle) formData.append("metaTitle", payload.metaTitle);
     if (payload.metaDescription)
       formData.append("metaDescription", payload.metaDescription);
@@ -106,9 +110,7 @@ export async function EventCreateService(payload: {
     if (payload.featuredImage)
       formData.append("featuredImage", payload.featuredImage);
 
-    const { data: response } = await AxiosClient.post("/events", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const { data: response } = await AxiosClient.post("/events", formData);
     return response;
   } catch (error: any) {
     return (
@@ -124,6 +126,7 @@ export async function EventUpdateService(
   id: number,
   payload: {
     title?: string;
+    slug?: string;
     content?: string;
     excerpt?: string;
     author?: string;
@@ -132,6 +135,7 @@ export async function EventUpdateService(
     endDate?: string;
     location?: string;
     status?: string;
+    publishedAt?: string | null;
     metaTitle?: string;
     metaDescription?: string;
     metaKeywords?: string[];
@@ -142,6 +146,7 @@ export async function EventUpdateService(
   try {
     const formData = new FormData();
     if (payload.title) formData.append("title", payload.title);
+    if (payload.slug !== undefined) formData.append("slug", payload.slug);
     if (payload.content !== undefined)
       formData.append("content", payload.content);
     if (payload.excerpt !== undefined)
@@ -158,6 +163,8 @@ export async function EventUpdateService(
       formData.append("location", payload.location);
     if (payload.status !== undefined)
       formData.append("status", payload.status);
+    if (payload.publishedAt !== undefined)
+      formData.append("publishedAt", payload.publishedAt || "");
     if (payload.metaTitle !== undefined)
       formData.append("metaTitle", payload.metaTitle);
     if (payload.metaDescription !== undefined)
@@ -170,10 +177,7 @@ export async function EventUpdateService(
 
     const { data: response } = await AxiosClient.put(
       `/events/${id}`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      formData
     );
     return response;
   } catch (error: any) {

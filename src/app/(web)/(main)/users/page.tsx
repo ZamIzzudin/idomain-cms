@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Notification from "@/components/Notification";
+import ConfirmModal from "@/components/ConfirmModal";
 import dayjs from "dayjs";
 import {
   useUserList,
@@ -53,6 +54,7 @@ export default function UsersPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [modal, setModal] = useState<ModalMode>("NONE");
   const [form, setForm] = useState<FormData>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; username: string } | null>(null);
 
   const router = useRouter();
   const { state } = useGlobalState();
@@ -145,17 +147,18 @@ export default function UsersPage() {
     });
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
 
-    deleteUser(id, {
+    deleteUser(deleteTarget.id, {
       onSuccess: () => {
-        Notification("success", "User deleted successfully");
+        Notification("success", "User berhasil dihapus");
         refetch();
       },
       onError: (error: any) => {
-        Notification("error", error.message || "Failed to delete user");
+        Notification("error", error.message || "Gagal menghapus user");
       },
+      onSettled: () => setDeleteTarget(null),
     });
   };
 
@@ -380,7 +383,7 @@ export default function UsersPage() {
                               <Edit className="w-4 h-4 text-slate-500" />
                             </button>
                             <button
-                              onClick={() => handleDelete(user.id)}
+                              onClick={() => setDeleteTarget({ id: user.id, username: user.username })}
                               disabled={deletePending}
                               className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
@@ -558,6 +561,15 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Hapus User"
+        message={`Apakah Anda yakin ingin menghapus user "${deleteTarget?.username}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -14,6 +14,7 @@ export default function EditEventPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [author, setAuthor] = useState("");
@@ -22,6 +23,7 @@ export default function EditEventPage() {
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("DRAFT");
+  const [publishedAt, setPublishedAt] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [metaKeywords, setMetaKeywords] = useState("");
@@ -42,6 +44,7 @@ export default function EditEventPage() {
   useEffect(() => {
     if (!event) return;
     setTitle(event.title || "");
+    setSlug(event.slug || "");
     setContent(event.content || "");
     setExcerpt(event.excerpt || "");
     setAuthor(event.author || "");
@@ -54,6 +57,7 @@ export default function EditEventPage() {
     setMetaDescription(event.metaDescription || "");
     setMetaKeywords(event.metaKeywords?.join(", ") || "");
     setFeaturedImage(event.featuredImage || "");
+    setPublishedAt(event.publishedAt ? toDatetimeLocal(event.publishedAt) : "");
   }, [event]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,8 +68,8 @@ export default function EditEventPage() {
       return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
-      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    if (file.size > 1 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
     }
     setFeaturedImageFile(file);
     setRemoveImage(false);
@@ -85,6 +89,7 @@ export default function EditEventPage() {
       {
         id,
         title,
+        slug,
         content,
         excerpt: excerpt || undefined,
         author: author || undefined,
@@ -93,6 +98,7 @@ export default function EditEventPage() {
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
         location: location || undefined,
         status,
+        publishedAt: publishedAt || null,
         metaTitle: metaTitle || undefined,
         metaDescription: metaDescription || undefined,
         metaKeywords: metaKeywords ? parseTags(metaKeywords) : undefined,
@@ -146,6 +152,20 @@ export default function EditEventPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Event title"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Slug
+              <span className="text-xs text-slate-400 ml-1">(otomatis dari judul, bisa diedit)</span>
+            </label>
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="event-slug"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -224,7 +244,7 @@ export default function EditEventPage() {
                     Klik untuk upload gambar
                   </span>
                   <span className="text-xs text-slate-400">
-                    JPG, PNG, WebP, GIF (Maks 10 MB)
+                    JPG, PNG, WebP, GIF (Maks 1 MB)
                   </span>
                 </div>
                 <input
@@ -262,7 +282,7 @@ export default function EditEventPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Author
@@ -288,6 +308,18 @@ export default function EditEventPage() {
                 <option value="PUBLISHED">Published</option>
                 <option value="ARCHIVED">Archived</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Tanggal Publish
+                <span className="text-xs text-slate-400 ml-1">(kosongkan untuk otomatis)</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={publishedAt}
+                onChange={(e) => setPublishedAt(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
             </div>
           </div>
 

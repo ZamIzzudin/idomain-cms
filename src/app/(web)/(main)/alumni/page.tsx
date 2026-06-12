@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import Notification from "@/components/Notification";
+import ConfirmModal from "@/components/ConfirmModal";
 import {
   useAlumniList,
   useAlumniFilterOptions,
@@ -47,6 +48,8 @@ export default function AlumniPage() {
   const [filterApproval, setFilterApproval] = useState<string>("all");
   const [sort, setSort] = useState("pending_first");
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     if (searchParams.get("filter") === "pending") {
@@ -120,38 +123,40 @@ export default function AlumniPage() {
     setPage(1);
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this alumni?")) return;
-    deleteAlumni(id, {
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteAlumni(deleteTarget.id, {
       onSuccess: () => {
-        Notification("success", "Alumni deleted successfully");
+        Notification("success", "Alumni berhasil dihapus");
       },
       onError: (error: any) => {
-        Notification("error", error.message || "Failed to delete alumni");
+        Notification("error", error.message || "Gagal menghapus alumni");
       },
+      onSettled: () => setDeleteTarget(null),
     });
   };
 
   const handleApprove = (id: number) => {
     approveAlumni(id, {
       onSuccess: () => {
-        Notification("success", "Alumni approved successfully");
+        Notification("success", "Alumni berhasil disetujui");
       },
       onError: (error: any) => {
-        Notification("error", error.message || "Failed to approve alumni");
+        Notification("error", error.message || "Gagal menyetujui alumni");
       },
     });
   };
 
-  const handleReject = (id: number) => {
-    if (!confirm("Are you sure you want to reject this alumni?")) return;
-    rejectAlumni(id, {
+  const confirmReject = () => {
+    if (!rejectTarget) return;
+    rejectAlumni(rejectTarget.id, {
       onSuccess: () => {
-        Notification("success", "Alumni rejected");
+        Notification("success", "Alumni berhasil ditolak");
       },
       onError: (error: any) => {
-        Notification("error", error.message || "Failed to reject alumni");
+        Notification("error", error.message || "Gagal menolak alumni");
       },
+      onSettled: () => setRejectTarget(null),
     });
   };
 
@@ -476,7 +481,7 @@ export default function AlumniPage() {
                           )}
                           {item.isApproved && (
                             <button
-                              onClick={() => handleReject(item.id)}
+                              onClick={() => setRejectTarget({ id: item.id, name: item.name })}
                               className="p-2 hover:bg-amber-50 rounded-lg transition-colors"
                               title="Reject"
                             >
@@ -493,7 +498,7 @@ export default function AlumniPage() {
                             <Edit className="w-4 h-4 text-slate-500" />
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
                             disabled={deletePending}
                             className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
@@ -690,6 +695,24 @@ export default function AlumniPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Hapus Alumni"
+        message={`Apakah Anda yakin ingin menghapus alumni "${deleteTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmModal
+        open={!!rejectTarget}
+        title="Tolak Alumni"
+        message={`Apakah Anda yakin ingin menolak alumni "${rejectTarget?.name}"?`}
+        confirmLabel="Ya, Tolak"
+        onConfirm={confirmReject}
+        onCancel={() => setRejectTarget(null)}
+      />
     </div>
   );
 }

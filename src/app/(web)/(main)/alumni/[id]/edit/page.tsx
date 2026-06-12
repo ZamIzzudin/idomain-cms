@@ -163,10 +163,10 @@ export default function EditAlumniPage() {
       );
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 1 * 1024 * 1024) {
       return Notification(
         "error",
-        `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`,
+        `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`,
       );
     }
     setForm((prev) => ({
@@ -532,7 +532,7 @@ export default function EditAlumniPage() {
               Foto
             </label>
             <p className="text-xs text-slate-400 mb-2">
-              Format: JPG, PNG, WebP, GIF. Maks: 10 MB.
+              Format: JPG, PNG, WebP, GIF. Maks: 1 MB.
             </p>
             {form.photo ? (
               <div className="relative inline-block">
@@ -564,7 +564,7 @@ export default function EditAlumniPage() {
                     Klik untuk upload foto
                   </span>
                   <span className="text-xs text-slate-400">
-                    JPG, PNG, WebP, GIF (Maks 10 MB)
+                    JPG, PNG, WebP, GIF (Maks 1 MB)
                   </span>
                 </div>
                 <input

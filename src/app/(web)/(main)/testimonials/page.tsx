@@ -8,6 +8,7 @@ import {
   Quote, Building2,
 } from "lucide-react";
 import Notification from "@/components/Notification";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useTestimonialList, useDeleteTestimonial } from "./hook";
 
 const PER_PAGE = 10;
@@ -17,6 +18,7 @@ export default function TestimonialsPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("desc");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   const debouncedSearch = useDebounce(search);
 
@@ -25,11 +27,12 @@ export default function TestimonialsPage() {
   });
   const { mutate: deleteTestimonial, isPending: deletePending } = useDeleteTestimonial();
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this testimonial?")) return;
-    deleteTestimonial(id, {
-      onSuccess: () => Notification("success", "Testimonial deleted successfully"),
-      onError: (error: any) => Notification("error", error.message || "Failed to delete"),
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteTestimonial(deleteTarget.id, {
+      onSuccess: () => Notification("success", "Testimonial berhasil dihapus"),
+      onError: (error: any) => Notification("error", error.message || "Gagal menghapus testimonial"),
+      onSettled: () => setDeleteTarget(null),
     });
   };
 
@@ -113,7 +116,7 @@ export default function TestimonialsPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => router.push(`/testimonials/${item.id}/edit`)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Edit"><Edit className="w-4 h-4 text-slate-500" /></button>
-                          <button onClick={() => handleDelete(item.id)} disabled={deletePending} className="p-2 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4 text-red-400" /></button>
+                          <button onClick={() => setDeleteTarget({ id: item.id, name: item.name })} disabled={deletePending} className="p-2 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4 text-red-400" /></button>
                         </div>
                       </td>
                     </tr>
@@ -141,6 +144,15 @@ export default function TestimonialsPage() {
           )}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Hapus Testimonial"
+        message={`Apakah Anda yakin ingin menghapus testimonial dari "${deleteTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

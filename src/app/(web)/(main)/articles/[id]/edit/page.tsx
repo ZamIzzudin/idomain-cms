@@ -14,11 +14,14 @@ export default function EditArticlePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
   const [status, setStatus] = useState("DRAFT");
+  const [publishedAt, setPublishedAt] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [metaKeywords, setMetaKeywords] = useState("");
@@ -29,9 +32,17 @@ export default function EditArticlePage() {
   const { data: article, isLoading } = useArticleDetail(id);
   const { mutate: updateArticle, isPending } = useUpdateArticle();
 
+  const toDatetimeLocal = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   useEffect(() => {
     if (!article) return;
     setTitle(article.title || "");
+    setSlug(article.slug || "");
     setContent(article.content || "");
     setExcerpt(article.excerpt || "");
     setAuthor(article.author || "");
@@ -41,6 +52,7 @@ export default function EditArticlePage() {
     setMetaDescription(article.metaDescription || "");
     setMetaKeywords(article.metaKeywords?.join(", ") || "");
     setFeaturedImage(article.featuredImage || "");
+    setPublishedAt(article.publishedAt ? toDatetimeLocal(article.publishedAt) : "");
   }, [article]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +63,8 @@ export default function EditArticlePage() {
       return Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
-      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    if (file.size > 1 * 1024 * 1024) {
+      return Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
     }
     setFeaturedImageFile(file);
     setRemoveImage(false);
@@ -72,11 +84,13 @@ export default function EditArticlePage() {
       {
         id,
         title,
+        slug,
         content,
         excerpt: excerpt || undefined,
         author: author || undefined,
         tags: tags ? parseTags(tags) : undefined,
         status,
+        publishedAt: publishedAt || null,
         metaTitle: metaTitle || undefined,
         metaDescription: metaDescription || undefined,
         metaKeywords: metaKeywords ? parseTags(metaKeywords) : undefined,
@@ -135,6 +149,19 @@ export default function EditArticlePage() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Slug
+                <span className="text-xs text-slate-400 ml-1">(otomatis dari judul, bisa diedit)</span>
+              </label>
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="article-slug"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
             {/* Featured Image */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -167,7 +194,7 @@ export default function EditArticlePage() {
                       Klik untuk upload gambar
                     </span>
                     <span className="text-xs text-slate-400">
-                      JPG, PNG, WebP, GIF (Maks 10 MB)
+                      JPG, PNG, WebP, GIF (Maks 1 MB)
                     </span>
                   </div>
                   <input
@@ -202,7 +229,7 @@ export default function EditArticlePage() {
                 placeholder="Write article content..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Author
@@ -228,6 +255,18 @@ export default function EditArticlePage() {
                   <option value="PUBLISHED">Published</option>
                   <option value="ARCHIVED">Archived</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Tanggal Publish
+                  <span className="text-xs text-slate-400 ml-1">(kosongkan untuk otomatis)</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={publishedAt}
+                  onChange={(e) => setPublishedAt(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
               </div>
             </div>
             <div>

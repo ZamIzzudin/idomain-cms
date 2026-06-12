@@ -18,6 +18,7 @@ import {
   Archive,
 } from "lucide-react";
 import Notification from "@/components/Notification";
+import ConfirmModal from "@/components/ConfirmModal";
 import {
   useArticleList,
   useArticleFilterOptions,
@@ -48,6 +49,7 @@ export default function ArticlesPage() {
   const [filterTag, setFilterTag] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
 
   const debouncedSearch = useDebounce(search);
 
@@ -71,12 +73,13 @@ export default function ArticlesPage() {
     setPage(1);
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this article?")) return;
-    deleteArticle(id, {
-      onSuccess: () => Notification("success", "Article deleted successfully"),
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteArticle(deleteTarget.id, {
+      onSuccess: () => Notification("success", "Article berhasil dihapus"),
       onError: (error: any) =>
-        Notification("error", error.message || "Failed to delete article"),
+        Notification("error", error.message || "Gagal menghapus article"),
+      onSettled: () => setDeleteTarget(null),
     });
   };
 
@@ -317,7 +320,7 @@ export default function ArticlesPage() {
                               <Edit className="w-4 h-4 text-slate-500" />
                             </button>
                             <button
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => setDeleteTarget({ id: item.id, title: item.title })}
                               disabled={deletePending}
                               className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
@@ -376,6 +379,15 @@ export default function ArticlesPage() {
           )}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Hapus Article"
+        message={`Apakah Anda yakin ingin menghapus article "${deleteTarget?.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

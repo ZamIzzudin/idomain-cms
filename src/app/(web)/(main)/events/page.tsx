@@ -19,6 +19,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Notification from "@/components/Notification";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useEventList, useEventFilterOptions, useDeleteEvent } from "./hook";
 
 const PER_PAGE = 10;
@@ -48,6 +49,7 @@ export default function EventsPage() {
   );
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
 
   const debouncedSearch = useDebounce(search);
 
@@ -80,12 +82,13 @@ export default function EventsPage() {
     });
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
-    deleteEvent(id, {
-      onSuccess: () => Notification("success", "Event deleted successfully"),
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteEvent(deleteTarget.id, {
+      onSuccess: () => Notification("success", "Event berhasil dihapus"),
       onError: (error: any) =>
-        Notification("error", error.message || "Failed to delete event"),
+        Notification("error", error.message || "Gagal menghapus event"),
+      onSettled: () => setDeleteTarget(null),
     });
   };
 
@@ -354,7 +357,7 @@ export default function EventsPage() {
                               <Edit className="w-4 h-4 text-slate-500" />
                             </button>
                             <button
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => setDeleteTarget({ id: item.id, title: item.title })}
                               disabled={deletePending}
                               className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
@@ -413,6 +416,15 @@ export default function EventsPage() {
           )}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Hapus Event"
+        message={`Apakah Anda yakin ingin menghapus event "${deleteTarget?.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

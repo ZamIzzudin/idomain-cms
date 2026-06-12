@@ -58,8 +58,8 @@ export default function QuillEditor({ content, onChange, placeholder }: QuillEdi
       }
 
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      if (file.size > 10 * 1024 * 1024) {
-        Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+      if (file.size > 1 * 1024 * 1024) {
+        Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
         return;
       }
 

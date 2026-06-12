@@ -201,8 +201,8 @@ function ImageUpload({
       return;
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    if (file.size > 10 * 1024 * 1024) {
-      Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+    if (file.size > 1 * 1024 * 1024) {
+      Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
       return;
     }
 
@@ -287,9 +287,9 @@ function BannerManager({
           Notification("error", `${file.name}: format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.`);
           continue;
         }
-        if (file.size > 10 * 1024 * 1024) {
+        if (file.size > 1 * 1024 * 1024) {
           const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-          Notification("error", `${file.name} (${sizeMB} MB) melebihi batas maksimal 10 MB.`);
+          Notification("error", `${file.name} (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
           continue;
         }
         const url = await uploadImage(file);
