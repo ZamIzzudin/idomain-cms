@@ -8,9 +8,12 @@ interface ApiConfig {
   timeout?: number;
 }
 
+type AuthExpiredCallback = () => void;
+
 class ApiClient {
   private instance: AxiosInstance;
   private token: string | null;
+  private onAuthExpired: AuthExpiredCallback | null = null;
 
   constructor(config: ApiConfig = {}) {
     this.instance = axios.create({
@@ -29,6 +32,11 @@ class ApiClient {
     this.setupInterceptors();
   }
 
+  /** Register a callback that fires once when a 401 is received */
+  public setOnAuthExpired(cb: AuthExpiredCallback) {
+    this.onAuthExpired = cb;
+  }
+
   private setupInterceptors() {
     this.instance.interceptors.request.use(
       (config) => {
@@ -36,13 +44,28 @@ class ApiClient {
         if (token && config.headers) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
-        // Let the browser set the correct Content-Type with boundary for FormData
         if (config.data instanceof FormData && config.headers) {
           delete config.headers["Content-Type"];
         }
         return config;
       },
       (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    this.instance.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (
+          typeof window !== "undefined" &&
+          error?.response?.status === 401
+        ) {
+          this.clearTokens();
+          if (this.onAuthExpired) {
+            this.onAuthExpired();
+          }
+        }
         return Promise.reject(error);
       }
     );

@@ -122,6 +122,17 @@ export async function Middleware({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    AxiosClient.setOnAuthExpired(() => {
+      dispatch({ type: "LOGOUT" });
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(LocalToken);
+        localStorage.removeItem(LocalRefreshToken);
+        cookies.remove(LocalToken);
+        cookies.remove(LocalRefreshToken);
+        router.push("/login");
+      }
+    });
+
     window.scrollTo(0, 0);
     actions.checkAuth();
   }, []);

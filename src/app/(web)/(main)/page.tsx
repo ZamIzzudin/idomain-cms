@@ -5,6 +5,7 @@
 import { useGlobalState } from "@/lib/middleware";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import CountUp from "@/components/CountUp";
 import {
   GraduationCap,
   Clock,
@@ -52,7 +53,7 @@ export default function Dashboard() {
                 {statsLoading ? (
                   <span className="inline-block w-16 h-8 bg-slate-100 rounded animate-pulse" />
                 ) : (
-                  (stats?.total ?? 0).toLocaleString()
+                  <CountUp target={stats?.total ?? 0} />
                 )}
               </p>
             </div>
@@ -83,7 +84,7 @@ export default function Dashboard() {
                 {statsLoading ? (
                   <span className="inline-block w-12 h-8 bg-slate-100 rounded animate-pulse" />
                 ) : (
-                  (stats?.pendingCount ?? 0).toLocaleString()
+                  <CountUp target={stats?.pendingCount ?? 0} />
                 )}
               </p>
             </div>
@@ -118,7 +119,7 @@ export default function Dashboard() {
                 {statsLoading ? (
                   <span className="inline-block w-10 h-8 bg-slate-100 rounded animate-pulse" />
                 ) : (
-                  (stats?.byProvince?.length ?? 0)
+                  <CountUp target={stats?.byProvince?.length ?? 0} />
                 )}
               </p>
             </div>
