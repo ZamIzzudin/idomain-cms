@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 import { useGlobalState } from "@/lib/middleware";
 import { useLogout } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/app/(web)/(main)/settings/hook";
 
 import { MenuItem } from "@/interface/type";
 import { DefaultMenu, SuperMenu } from "@/lib/var";
@@ -43,6 +44,10 @@ export default function Sidebar() {
   const { state } = useGlobalState();
   const pathname = usePathname();
   const { mutate: logout, isPending: logoutPending } = useLogout();
+  const { data: settings } = useSiteSettings();
+
+  const siteName = settings?.find((s) => s.key === "site_name")?.value || "IDOMAIN";
+  const siteLogo = settings?.find((s) => s.key === "site_logo")?.value;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [menuList, setMenuList] = useState<MenuItem[]>(DefaultMenu);
@@ -77,15 +82,23 @@ export default function Sidebar() {
             }`}
           >
             <div className="flex gap-3 items-center">
-              <div
-                onClick={() => setIsCollapsed(false)}
-                className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center cursor-pointer"
-              >
-                <span className="text-white font-bold text-sm">I</span>
-              </div>
+              {siteLogo ? (
+                <img
+                  src={siteLogo}
+                  alt={siteName}
+                  className={`object-contain ${isCollapsed ? "w-8 h-8" : "h-8 w-auto"}`}
+                />
+              ) : (
+                <div
+                  onClick={() => setIsCollapsed(false)}
+                  className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center cursor-pointer"
+                >
+                  <span className="text-white font-bold text-sm">{siteName.charAt(0)}</span>
+                </div>
+              )}
               {!isCollapsed && (
-                <span className="font-bold text-slate-800 text-lg">
-                  IDOMAIN
+                <span className="font-bold text-slate-800 text-lg truncate">
+                  {siteName}
                 </span>
               )}
             </div>

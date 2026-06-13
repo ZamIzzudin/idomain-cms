@@ -147,43 +147,6 @@ const settingGroups: SettingGroup[] = [
       },
     ],
   },
-  {
-    category: "social",
-    title: "Media Sosial",
-    icon: Share2,
-    fields: [
-      {
-        key: "social_facebook",
-        label: "Facebook URL",
-        type: "url",
-        placeholder: "https://facebook.com/...",
-      },
-      {
-        key: "social_instagram",
-        label: "Instagram URL",
-        type: "url",
-        placeholder: "https://instagram.com/...",
-      },
-      {
-        key: "social_youtube",
-        label: "YouTube URL",
-        type: "url",
-        placeholder: "https://youtube.com/...",
-      },
-      {
-        key: "social_linkedin",
-        label: "LinkedIn URL",
-        type: "url",
-        placeholder: "https://linkedin.com/...",
-      },
-      {
-        key: "social_twitter",
-        label: "Twitter/X URL",
-        type: "url",
-        placeholder: "https://twitter.com/...",
-      },
-    ],
-  },
 ];
 
 function uploadImage(file: File): Promise<string> {
@@ -555,6 +518,265 @@ function MisiManager({
   );
 }
 
+const PRESET_ICONS = [
+  "facebook",
+  "instagram",
+  "youtube",
+  "linkedin",
+  "twitter",
+  "tiktok",
+  "whatsapp",
+  "telegram",
+  "github",
+  "globe",
+  "mail",
+  "phone",
+  "custom",
+] as const;
+
+type PresetIcon = (typeof PRESET_ICONS)[number];
+
+interface SocialLinkItem {
+  label: string;
+  url: string;
+  icon: PresetIcon;
+  customIconUrl?: string;
+}
+
+function SocialLinksManager({
+  items,
+  onChange,
+}: {
+  items: SocialLinkItem[];
+  onChange: (items: SocialLinkItem[]) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+
+  const handleAdd = () => {
+    onChange([...items, { label: "", url: "", icon: "globe", customIconUrl: "" }]);
+  };
+
+  const handleRemove = (index: number) => {
+    onChange(items.filter((_, i) => i !== index));
+  };
+
+  const handleUpdate = (
+    index: number,
+    field: keyof SocialLinkItem,
+    value: string,
+  ) => {
+    const updated = [...items];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange(updated);
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...items];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    onChange(updated);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === items.length - 1) return;
+    const updated = [...items];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    onChange(updated);
+  };
+
+  const handleIconUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/svg+xml",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      Notification(
+        "error",
+        "Format file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau SVG.",
+      );
+      return;
+    }
+    if (file.size > 1 * 1024 * 1024) {
+      Notification("error", "Ukuran file melebihi batas maksimal 1 MB.");
+      return;
+    }
+
+    setUploadingIdx(index);
+    try {
+      const url = await uploadImage(file);
+      handleUpdate(index, "customIconUrl", url);
+    } catch {
+      Notification("error", "Gagal upload ikon");
+    } finally {
+      setUploadingIdx(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500">{items.length} media sosial</p>
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-xs font-medium"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Tambah Media Sosial
+        </button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
+          <Share2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-sm text-slate-400">
+            Belum ada media sosial. Klik &ldquo;Tambah Media Sosial&rdquo;
+            untuk menambahkan.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-2 bg-slate-50 rounded-lg p-3 border border-slate-100 group"
+            >
+              <div className="flex flex-col gap-0.5 shrink-0 pt-1">
+                <span className="text-xs font-medium text-slate-400 text-center w-5">
+                  {index + 1}
+                </span>
+                <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleMoveUp(index)}
+                    disabled={index === 0}
+                    className="w-5 h-4 bg-white rounded flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 border border-slate-200"
+                    title="Geser ke atas"
+                  >
+                    <ChevronUp className="w-3 h-3 text-slate-600" />
+                  </button>
+                  <button
+                    onClick={() => handleMoveDown(index)}
+                    disabled={index === items.length - 1}
+                    className="w-5 h-4 bg-white rounded flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 border border-slate-200"
+                    title="Geser ke bawah"
+                  >
+                    <ChevronDown className="w-3 h-3 text-slate-600" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={item.label}
+                    onChange={(e) =>
+                      handleUpdate(index, "label", e.target.value)
+                    }
+                    placeholder="Label (contoh: Facebook)"
+                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                  <input
+                    type="url"
+                    value={item.url}
+                    onChange={(e) =>
+                      handleUpdate(index, "url", e.target.value)
+                    }
+                    placeholder="https://..."
+                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={item.icon}
+                    onChange={(e) =>
+                      handleUpdate(index, "icon", e.target.value)
+                    }
+                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {PRESET_ICONS.map((ic) => (
+                      <option key={ic} value={ic}>
+                        {ic === "custom" ? "Custom (upload gambar)" : ic.charAt(0).toUpperCase() + ic.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  {item.icon === "custom" && (
+                    <div className="flex items-center gap-2">
+                      {item.customIconUrl ? (
+                        <div className="relative group/icon">
+                          <img
+                            src={item.customIconUrl}
+                            alt="Custom icon"
+                            className="w-6 h-6 object-contain rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdate(index, "customIconUrl", "")
+                            }
+                            className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/icon:opacity-100"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadingIdx(index);
+                          setTimeout(() => {
+                            const input = document.getElementById(
+                              `social-icon-${index}`,
+                            ) as HTMLInputElement;
+                            input?.click();
+                          }, 50);
+                        }}
+                        disabled={uploadingIdx === index}
+                        className="px-2 py-1 text-[11px] border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 disabled:opacity-50"
+                      >
+                        {uploadingIdx === index ? "Uploading..." : item.customIconUrl ? "Ganti" : "Upload Ikon"}
+                      </button>
+                      <input
+                        id={`social-icon-${index}`}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                        onChange={(e) => handleIconUpload(e, index)}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => handleRemove(index)}
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors mt-1"
+                title="Hapus"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+        onChange={() => {}}
+        className="hidden"
+      />
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { data: settings, isLoading } = useSiteSettings();
   const { mutate: saveSettings, isPending } = useUpdateSiteSettings();
@@ -565,6 +787,7 @@ export default function SettingsPage() {
   const [misiItems, setMisiItems] = useState<MisiItem[]>([]);
   const [heroExpanded, setHeroExpanded] = useState(true);
   const [galleryExpanded, setGalleryExpanded] = useState(true);
+  const [socialLinks, setSocialLinks] = useState<SocialLinkItem[]>([]);
 
   useEffect(() => {
     if (!settings) return;
@@ -624,6 +847,45 @@ export default function SettingsPage() {
         setMisiItems(parsed);
       }
     }
+
+    // Load social links from new format
+    const socialLinksSetting = settings.find(
+      (s: SiteSettingItem) => s.key === "social_links",
+    );
+    if (socialLinksSetting?.value) {
+      try {
+        const parsed = JSON.parse(socialLinksSetting.value);
+        if (Array.isArray(parsed)) {
+          setSocialLinks(parsed);
+        }
+      } catch {
+        setSocialLinks([]);
+      }
+    } else {
+      // Migrate from legacy social_* fields
+      const legacyMap: Record<string, PresetIcon> = {
+        social_facebook: "facebook",
+        social_instagram: "instagram",
+        social_youtube: "youtube",
+        social_linkedin: "linkedin",
+        social_twitter: "twitter",
+      };
+      const legacyLabel: Record<string, string> = {
+        social_facebook: "Facebook",
+        social_instagram: "Instagram",
+        social_youtube: "YouTube",
+        social_linkedin: "LinkedIn",
+        social_twitter: "Twitter/X",
+      };
+      const migrated: SocialLinkItem[] = [];
+      for (const [key, icon] of Object.entries(legacyMap)) {
+        const val = map[key];
+        if (val) {
+          migrated.push({ label: legacyLabel[key], url: val, icon });
+        }
+      }
+      if (migrated.length > 0) setSocialLinks(migrated);
+    }
   }, [settings]);
 
   const toggleGroup = (category: string) => {
@@ -664,6 +926,12 @@ export default function SettingsPage() {
       key: "about_misi",
       value: misiItems.length > 0 ? JSON.stringify(misiItems) : null,
       category: "about",
+    });
+
+    payload.push({
+      key: "social_links",
+      value: socialLinks.length > 0 ? JSON.stringify(socialLinks) : null,
+      category: "social",
     });
 
     saveSettings(payload, {
@@ -861,6 +1129,40 @@ export default function SettingsPage() {
           })}
         </div>
       )}
+
+      {/* Social Links Section */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => {
+            setExpandedGroups((prev) =>
+              prev.includes("social")
+                ? prev.filter((c) => c !== "social")
+                : [...prev, "social"],
+            );
+          }}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+              <Share2 className="w-4 h-4 text-primary-600" />
+            </div>
+            <span className="font-semibold text-slate-800 text-sm">
+              Media Sosial
+            </span>
+            <span className="text-xs text-slate-400">Dinamis</span>
+          </div>
+          {expandedGroups.includes("social") ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
+        </button>
+        {expandedGroups.includes("social") && (
+          <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+            <SocialLinksManager items={socialLinks} onChange={setSocialLinks} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
