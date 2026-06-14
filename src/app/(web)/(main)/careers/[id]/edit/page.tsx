@@ -4,20 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Briefcase, Upload, X } from "lucide-react";
 import Notification from "@/components/Notification";
-import {
-  useCareerDetail,
-  useUpdateCareer,
-  useCategoryList,
-} from "../../hook";
+import ListInput from "@/components/ListInput";
+import { useCareerDetail, useUpdateCareer, useCategoryList } from "../../hook";
 import locationData from "@/data/location.json";
 
-const jobTypes = [
-  "Penuh Waktu",
-  "Paruh Waktu",
-  "Kontrak",
-  "Magang",
-  "Lepas",
-];
+const jobTypes = ["Penuh Waktu", "Paruh Waktu", "Kontrak", "Magang", "Lepas"];
 
 const provinces = (locationData as any).data.map((l: any) => l.provinsi);
 const getProvinceCities = (prov: string) =>
@@ -40,8 +31,8 @@ export default function EditCareerPage() {
   const [cities, setCities] = useState<string[]>([]);
   const [jobType, setJobType] = useState("Penuh Waktu");
   const [categoryId, setCategoryId] = useState("");
-  const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
+  const [description, setDescription] = useState<string[]>([]);
+  const [requirements, setRequirements] = useState<string[]>([]);
   const [deadline, setDeadline] = useState("");
   const [recruitmentEmail, setRecruitmentEmail] = useState("");
   const [recruitmentUrl, setRecruitmentUrl] = useState("");
@@ -64,8 +55,8 @@ export default function EditCareerPage() {
       setCity(career.city || "");
       setJobType(career.jobType || "Penuh Waktu");
       setCategoryId(career.categoryId ? String(career.categoryId) : "");
-      setDescription(career.description || "");
-      setRequirements(career.requirements || "");
+      setDescription(career.description ? career.description.split("\n").filter(Boolean) : []);
+      setRequirements(career.requirements ? career.requirements.split("\n").filter(Boolean) : []);
       setDeadline(career.deadline ? career.deadline.split("T")[0] : "");
       setRecruitmentEmail(career.recruitmentEmail || "");
       setRecruitmentUrl(career.recruitmentUrl || "");
@@ -112,8 +103,8 @@ export default function EditCareerPage() {
     formData.append("city", city);
     formData.append("jobType", jobType);
     formData.append("categoryId", categoryId);
-    formData.append("description", description);
-    formData.append("requirements", requirements);
+    formData.append("description", description.filter(Boolean).join("\n"));
+    formData.append("requirements", requirements.filter(Boolean).join("\n"));
     if (deadline) formData.append("deadline", deadline);
     formData.append("recruitmentEmail", recruitmentEmail);
     formData.append("recruitmentUrl", recruitmentUrl);
@@ -133,7 +124,7 @@ export default function EditCareerPage() {
         onError: (error: any) => {
           Notification("error", error.message || "Failed to update career");
         },
-      }
+      },
     );
   };
 
@@ -354,29 +345,29 @@ export default function EditCareerPage() {
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Deskripsi Pekerjaan
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Satu poin per baris"
-            rows={4}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+          <ListInput
+            items={description}
+            onChange={setDescription}
+            placeholder="Deskripsi pekerjaan..."
+            addLabel="Tambah Deskripsi"
+            emptyLabel="Belum ada deskripsi. Klik tambah untuk menambahkan."
           />
         </div>
 
         {/* Requirements */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Persyaratan
           </label>
-          <textarea
-            value={requirements}
-            onChange={(e) => setRequirements(e.target.value)}
-            placeholder="Satu poin per baris"
-            rows={4}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+          <ListInput
+            items={requirements}
+            onChange={setRequirements}
+            placeholder="Persyaratan..."
+            addLabel="Tambah Persyaratan"
+            emptyLabel="Belum ada persyaratan. Klik tambah untuk menambahkan."
           />
         </div>
 
@@ -411,7 +402,7 @@ export default function EditCareerPage() {
           </div>
           <div className="mt-3">
             <label className="block text-xs font-medium text-slate-600 mb-1">
-              Kontak Person
+              Contact Person
             </label>
             <input
               type="text"
