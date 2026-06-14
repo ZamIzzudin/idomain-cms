@@ -1,6 +1,6 @@
 /** @format */
 
-export const ValidPath = ["", "users", "alumni", "articles", "events", "testimonials", "settings", "content", "pages", "new", "edit"];
+export const ValidPath = ["", "users", "alumni", "articles", "events", "testimonials", "settings", "careers", "categories", "content", "pages", "new", "edit"];
 
 export const LocalToken = "idomain_auth_token";
 export const LocalRefreshToken = "idomain_refresh_token";
@@ -11,7 +11,8 @@ export const DefaultMenu = [
   { id: 3, text: "Articles", href: "/articles" },
   { id: 4, text: "Events", href: "/events" },
   { id: 5, text: "Testimonials", href: "/testimonials" },
-  { id: 6, text: "Settings", href: "/settings" },
+  { id: 6, text: "Careers", href: "/careers" },
+  { id: 7, text: "Settings", href: "/settings" },
 ];
 
 export const SuperMenu = [
@@ -21,7 +22,8 @@ export const SuperMenu = [
   { id: 4, text: "Articles", href: "/articles" },
   { id: 5, text: "Events", href: "/events" },
   { id: 6, text: "Testimonials", href: "/testimonials" },
-  { id: 7, text: "Settings", href: "/settings" },
+  { id: 7, text: "Careers", href: "/careers" },
+  { id: 8, text: "Settings", href: "/settings" },
 ];
 
 export const colors = [

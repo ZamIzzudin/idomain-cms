@@ -23,7 +23,7 @@ import type { SiteSettingItem } from "./service";
 interface SettingField {
   key: string;
   label: string;
-  type: "text" | "textarea" | "url" | "image";
+  type: "text" | "textarea" | "url" | "image" | "phone";
   placeholder?: string;
 }
 
@@ -136,8 +136,8 @@ const settingGroups: SettingGroup[] = [
       {
         key: "contact_phone",
         label: "Telepon",
-        type: "text",
-        placeholder: "+62 811-9843-210",
+        type: "phone",
+        placeholder: "08119843210",
       },
       {
         key: "contact_address",
@@ -149,7 +149,12 @@ const settingGroups: SettingGroup[] = [
   },
 ];
 
-function uploadImage(file: File): Promise<string> {
+interface UploadResult {
+  url: string;
+  publicId: string;
+}
+
+function uploadImage(file: File): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -158,7 +163,10 @@ function uploadImage(file: File): Promise<string> {
         const { data } = await AxiosClient.post("/upload/image", {
           image: base64,
         });
-        resolve(data.data.url);
+        resolve({
+          url: data.data.url,
+          publicId: data.data.publicId,
+        });
       } catch (err) {
         reject(err);
       }
@@ -168,17 +176,30 @@ function uploadImage(file: File): Promise<string> {
   });
 }
 
+function parseImageValue(value: string): string {
+  if (!value) return "";
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed.url) return parsed.url;
+  } catch {
+    // Legacy: value is a raw URL string
+    return value;
+  }
+  return "";
+}
+
 function ImageUpload({
   value,
   onChange,
   placeholder,
 }: {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (rawValue: string) => void;
   placeholder?: string;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const displayUrl = parseImageValue(value);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -196,8 +217,8 @@ function ImageUpload({
 
     setUploading(true);
     try {
-      const url = await uploadImage(file);
-      onChange(url);
+      const result = await uploadImage(file);
+      onChange(JSON.stringify({ url: result.url, publicId: result.publicId }));
     } catch {
       Notification("error", "Gagal upload gambar");
     } finally {
@@ -208,10 +229,10 @@ function ImageUpload({
 
   return (
     <div className="flex items-center gap-3">
-      {value ? (
+      {displayUrl ? (
         <div className="relative group">
           <img
-            src={value}
+            src={displayUrl}
             alt="Preview"
             className="w-16 h-16 rounded-lg object-cover border border-slate-200"
           />
@@ -237,7 +258,7 @@ function ImageUpload({
         disabled={uploading}
         className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-slate-600 disabled:opacity-50"
       >
-        {uploading ? "Uploading..." : value ? "Ganti" : "Pilih File"}
+        {uploading ? "Uploading..." : displayUrl ? "Ganti" : "Pilih File"}
       </button>
       <input
         ref={fileInputRef}
@@ -280,8 +301,8 @@ function BannerManager({
           Notification("error", `${file.name} (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
           continue;
         }
-        const url = await uploadImage(file);
-        newBanners.push(url);
+        const result = await uploadImage(file);
+        newBanners.push(JSON.stringify({ url: result.url, publicId: result.publicId }));
       }
       onChange(newBanners);
     } catch {
@@ -348,7 +369,9 @@ function BannerManager({
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {banners.map((url, index) => (
+          {banners.map((raw, index) => {
+            const url = parseImageValue(raw);
+            return (
             <div
               key={index}
               className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
@@ -388,7 +411,8 @@ function BannerManager({
                 </button>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>
@@ -612,8 +636,8 @@ function SocialLinksManager({
 
     setUploadingIdx(index);
     try {
-      const url = await uploadImage(file);
-      handleUpdate(index, "customIconUrl", url);
+      const result = await uploadImage(file);
+      handleUpdate(index, "customIconUrl", JSON.stringify({ url: result.url, publicId: result.publicId }));
     } catch {
       Notification("error", "Gagal upload ikon");
     } finally {
@@ -713,7 +737,7 @@ function SocialLinksManager({
                       {item.customIconUrl ? (
                         <div className="relative group/icon">
                           <img
-                            src={item.customIconUrl}
+                            src={parseImageValue(item.customIconUrl)}
                             alt="Custom icon"
                             className="w-6 h-6 object-contain rounded"
                           />
@@ -1020,6 +1044,21 @@ export default function SettingsPage() {
                             value={formData[field.key] || ""}
                             onChange={(url) => updateField(field.key, url)}
                             placeholder={field.placeholder}
+                          />
+                        ) : field.type === "phone" ? (
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            value={formData[field.key] || ""}
+                            onChange={(e) =>
+                              updateField(
+                                field.key,
+                                e.target.value.replace(/\D/g, "").slice(0, 14)
+                              )
+                            }
+                            placeholder={field.placeholder}
+                            maxLength={14}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                           />
                         ) : field.type === "textarea" ? (
                           <textarea

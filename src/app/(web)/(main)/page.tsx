@@ -13,8 +13,13 @@ import {
   Award,
   BarChart3,
   AlertCircle,
+  Briefcase,
+  Check,
+  XCircle,
 } from "lucide-react";
 import { useAlumniStats } from "@/hooks/useAlumniStats";
+import { useCareerList, useApproveCareer, useRejectCareer } from "./careers/hook";
+import Notification from "@/components/Notification";
 
 const CMSAlumniMap = dynamic(() => import("@/components/CMSAlumniMap"), {
   ssr: false,
@@ -28,6 +33,30 @@ const CMSAlumniMap = dynamic(() => import("@/components/CMSAlumniMap"), {
 export default function Dashboard() {
   const { state } = useGlobalState();
   const { data: stats, isLoading: statsLoading } = useAlumniStats();
+  const { data: pendingCareers } = useCareerList({
+    status: "PENDING_REVIEW",
+    limit: 5,
+    sortOrder: "asc",
+  });
+  const { mutate: approveCareer } = useApproveCareer();
+  const { mutate: rejectCareer } = useRejectCareer();
+
+  const pendingItems = pendingCareers?.items || [];
+  const pendingTotal = pendingCareers?.total || 0;
+
+  const handleApprove = (id: number) => {
+    approveCareer(id, {
+      onSuccess: () => Notification("success", "Lowongan dipublikasikan"),
+      onError: (e: any) => Notification("error", e.message),
+    });
+  };
+
+  const handleReject = (id: number) => {
+    rejectCareer(id, {
+      onSuccess: () => Notification("success", "Lowongan ditolak"),
+      onError: (e: any) => Notification("error", e.message),
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -129,6 +158,76 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Pending Career Approvals */}
+      {pendingTotal > 0 && (
+        <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 bg-amber-50 border-b border-amber-200">
+            <div className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-amber-600" />
+              <h2 className="text-sm font-semibold text-slate-800">
+                Lowongan Menunggu Persetujuan
+              </h2>
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-amber-500 text-white text-xs font-bold rounded-full">
+                {pendingTotal}
+              </span>
+            </div>
+            <Link
+              href="/careers"
+              className="text-xs text-amber-600 font-medium hover:underline"
+            >
+              Lihat semua →
+            </Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {pendingItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/50 transition-colors"
+              >
+                {item.logo ? (
+                  <img
+                    src={item.logo}
+                    alt={item.institutionName}
+                    className="w-9 h-9 rounded-lg object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-lg bg-primary-600/10 flex items-center justify-center shrink-0">
+                    <Briefcase className="w-4 h-4 text-primary-600" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate">
+                    {item.position}
+                  </p>
+                  <p className="text-xs text-slate-400 truncate">
+                    {item.institutionName}
+                    {item.author?.name ? ` • oleh ${item.author.name}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => handleApprove(item.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors"
+                    title="Approve"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Approve</span>
+                  </button>
+                  <button
+                    onClick={() => handleReject(item.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-500 rounded-lg text-xs font-medium hover:bg-orange-100 transition-colors"
+                    title="Reject"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Reject</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Map + Detailed Stats */}
       {!statsLoading && stats && (

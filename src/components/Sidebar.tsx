@@ -26,6 +26,7 @@ import {
   Newspaper,
   CalendarDays,
   Quote,
+  Briefcase,
 } from "lucide-react";
 
 const iconMap: Record<string, any> = {
@@ -37,6 +38,7 @@ const iconMap: Record<string, any> = {
   Articles: Newspaper,
   Events: CalendarDays,
   Testimonials: Quote,
+  Careers: Briefcase,
   Settings,
 };
 
