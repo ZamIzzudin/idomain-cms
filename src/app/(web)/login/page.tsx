@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">
-            IDOMAIN CMS
+            iDomain CMS
           </h1>
           <p className="text-slate-600">Sign in to your dashboard</p>
         </div>

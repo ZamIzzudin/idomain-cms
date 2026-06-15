@@ -27,6 +27,7 @@ import {
   CalendarDays,
   Quote,
   Briefcase,
+  Tags,
 } from "lucide-react";
 
 const iconMap: Record<string, any> = {
@@ -39,6 +40,7 @@ const iconMap: Record<string, any> = {
   Events: CalendarDays,
   Testimonials: Quote,
   Careers: Briefcase,
+  Categories: Tags,
   Settings,
 };
 
@@ -48,7 +50,8 @@ export default function Sidebar() {
   const { mutate: logout, isPending: logoutPending } = useLogout();
   const { data: settings } = useSiteSettings();
 
-  const siteName = settings?.find((s) => s.key === "site_name")?.value || "IDOMAIN";
+  const siteName =
+    settings?.find((s) => s.key === "site_name")?.value || "iDomain";
   const siteLogo = settings?.find((s) => s.key === "site_logo")?.value;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -95,7 +98,9 @@ export default function Sidebar() {
                   onClick={() => setIsCollapsed(false)}
                   className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center cursor-pointer"
                 >
-                  <span className="text-white font-bold text-sm">{siteName.charAt(0)}</span>
+                  <span className="text-white font-bold text-sm">
+                    {siteName.charAt(0)}
+                  </span>
                 </div>
               )}
               {!isCollapsed && (

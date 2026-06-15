@@ -12,7 +12,7 @@ const jakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "CMS IDOMAIN",
+  title: "CMS iDomain",
   description: "[INTERNAL USAGE] Content Management System (CMS)",
 };
 

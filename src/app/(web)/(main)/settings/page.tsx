@@ -44,7 +44,7 @@ const settingGroups: SettingGroup[] = [
         key: "site_name",
         label: "Nama Website",
         type: "text",
-        placeholder: "IDOMAIN",
+        placeholder: "iDomain",
       },
       {
         key: "site_description",
@@ -75,7 +75,7 @@ const settingGroups: SettingGroup[] = [
         key: "home_about_title",
         label: "Judul",
         type: "text",
-        placeholder: "Tentang IDOMAIN",
+        placeholder: "Tentang iDomain",
       },
       {
         key: "home_about_description",
@@ -100,7 +100,7 @@ const settingGroups: SettingGroup[] = [
         key: "about_title",
         label: "Judul",
         type: "text",
-        placeholder: "Tentang IDOMAIN",
+        placeholder: "Tentang iDomain",
       },
       {
         key: "about_description",
@@ -204,14 +204,27 @@ function ImageUpload({
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/x-icon", "image/vnd.microsoft.icon"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/x-icon",
+      "image/vnd.microsoft.icon",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      Notification("error", "Format file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau ICO.");
+      Notification(
+        "error",
+        "Format file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau ICO.",
+      );
       return;
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
     if (file.size > 1 * 1024 * 1024) {
-      Notification("error", `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
+      Notification(
+        "error",
+        `Ukuran file (${sizeMB} MB) melebihi batas maksimal 1 MB.`,
+      );
       return;
     }
 
@@ -290,19 +303,32 @@ function BannerManager({
     setUploading(true);
     try {
       const newBanners = [...banners];
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+      ];
       for (const file of Array.from(files)) {
         if (!allowedTypes.includes(file.type)) {
-          Notification("error", `${file.name}: format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.`);
+          Notification(
+            "error",
+            `${file.name}: format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.`,
+          );
           continue;
         }
         if (file.size > 1 * 1024 * 1024) {
           const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-          Notification("error", `${file.name} (${sizeMB} MB) melebihi batas maksimal 1 MB.`);
+          Notification(
+            "error",
+            `${file.name} (${sizeMB} MB) melebihi batas maksimal 1 MB.`,
+          );
           continue;
         }
         const result = await uploadImage(file);
-        newBanners.push(JSON.stringify({ url: result.url, publicId: result.publicId }));
+        newBanners.push(
+          JSON.stringify({ url: result.url, publicId: result.publicId }),
+        );
       }
       onChange(newBanners);
     } catch {
@@ -372,46 +398,46 @@ function BannerManager({
           {banners.map((raw, index) => {
             const url = parseImageValue(raw);
             return (
-            <div
-              key={index}
-              className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
-            >
-              <img
-                src={url}
-                alt={`Banner ${index + 1}`}
-                className="w-full h-32 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-              <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
-                {index + 1}
+              <div
+                key={index}
+                className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
+              >
+                <img
+                  src={url}
+                  alt={`Banner ${index + 1}`}
+                  className="w-full h-32 object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  {index + 1}
+                </div>
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleMoveUp(index)}
+                    disabled={index === 0}
+                    className="w-6 h-6 bg-white/90 rounded flex items-center justify-center hover:bg-white disabled:opacity-30"
+                    title="Geser ke atas"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-700" />
+                  </button>
+                  <button
+                    onClick={() => handleMoveDown(index)}
+                    disabled={index === banners.length - 1}
+                    className="w-6 h-6 bg-white/90 rounded flex items-center justify-center hover:bg-white disabled:opacity-30"
+                    title="Geser ke bawah"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-700" />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(index)}
+                    className="w-6 h-6 bg-red-500 rounded flex items-center justify-center hover:bg-red-600"
+                    title="Hapus"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
               </div>
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleMoveUp(index)}
-                  disabled={index === 0}
-                  className="w-6 h-6 bg-white/90 rounded flex items-center justify-center hover:bg-white disabled:opacity-30"
-                  title="Geser ke atas"
-                >
-                  <ChevronUp className="w-3.5 h-3.5 text-slate-700" />
-                </button>
-                <button
-                  onClick={() => handleMoveDown(index)}
-                  disabled={index === banners.length - 1}
-                  className="w-6 h-6 bg-white/90 rounded flex items-center justify-center hover:bg-white disabled:opacity-30"
-                  title="Geser ke bawah"
-                >
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-700" />
-                </button>
-                <button
-                  onClick={() => handleRemove(index)}
-                  className="w-6 h-6 bg-red-500 rounded flex items-center justify-center hover:bg-red-600"
-                  title="Hapus"
-                >
-                  <X className="w-3.5 h-3.5 text-white" />
-                </button>
-              </div>
-            </div>
-          );
+            );
           })}
         </div>
       )}
@@ -439,7 +465,11 @@ function MisiManager({
     onChange(items.filter((_, i) => i !== index));
   };
 
-  const handleUpdate = (index: number, field: "title" | "subtitle", value: string) => {
+  const handleUpdate = (
+    index: number,
+    field: "title" | "subtitle",
+    value: string,
+  ) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
@@ -462,9 +492,7 @@ function MisiManager({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">
-          {items.length} misi
-        </p>
+        <p className="text-sm text-slate-500">{items.length} misi</p>
         <button
           onClick={handleAdd}
           className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-xs font-medium"
@@ -522,7 +550,9 @@ function MisiManager({
                 <input
                   type="text"
                   value={item.subtitle}
-                  onChange={(e) => handleUpdate(index, "subtitle", e.target.value)}
+                  onChange={(e) =>
+                    handleUpdate(index, "subtitle", e.target.value)
+                  }
                   placeholder="Deskripsi singkat misi..."
                   className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
@@ -578,7 +608,10 @@ function SocialLinksManager({
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
   const handleAdd = () => {
-    onChange([...items, { label: "", url: "", icon: "globe", customIconUrl: "" }]);
+    onChange([
+      ...items,
+      { label: "", url: "", icon: "globe", customIconUrl: "" },
+    ]);
   };
 
   const handleRemove = (index: number) => {
@@ -637,7 +670,11 @@ function SocialLinksManager({
     setUploadingIdx(index);
     try {
       const result = await uploadImage(file);
-      handleUpdate(index, "customIconUrl", JSON.stringify({ url: result.url, publicId: result.publicId }));
+      handleUpdate(
+        index,
+        "customIconUrl",
+        JSON.stringify({ url: result.url, publicId: result.publicId }),
+      );
     } catch {
       Notification("error", "Gagal upload ikon");
     } finally {
@@ -663,8 +700,8 @@ function SocialLinksManager({
         <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center">
           <Share2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
           <p className="text-sm text-slate-400">
-            Belum ada media sosial. Klik &ldquo;Tambah Media Sosial&rdquo;
-            untuk menambahkan.
+            Belum ada media sosial. Klik &ldquo;Tambah Media Sosial&rdquo; untuk
+            menambahkan.
           </p>
         </div>
       ) : (
@@ -711,9 +748,7 @@ function SocialLinksManager({
                   <input
                     type="url"
                     value={item.url}
-                    onChange={(e) =>
-                      handleUpdate(index, "url", e.target.value)
-                    }
+                    onChange={(e) => handleUpdate(index, "url", e.target.value)}
                     placeholder="https://..."
                     className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
@@ -728,7 +763,9 @@ function SocialLinksManager({
                   >
                     {PRESET_ICONS.map((ic) => (
                       <option key={ic} value={ic}>
-                        {ic === "custom" ? "Custom (upload gambar)" : ic.charAt(0).toUpperCase() + ic.slice(1)}
+                        {ic === "custom"
+                          ? "Custom (upload gambar)"
+                          : ic.charAt(0).toUpperCase() + ic.slice(1)}
                       </option>
                     ))}
                   </select>
@@ -766,7 +803,11 @@ function SocialLinksManager({
                         disabled={uploadingIdx === index}
                         className="px-2 py-1 text-[11px] border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 disabled:opacity-50"
                       >
-                        {uploadingIdx === index ? "Uploading..." : item.customIconUrl ? "Ganti" : "Upload Ikon"}
+                        {uploadingIdx === index
+                          ? "Uploading..."
+                          : item.customIconUrl
+                            ? "Ganti"
+                            : "Upload Ikon"}
                       </button>
                       <input
                         id={`social-icon-${index}`}
@@ -804,7 +845,11 @@ function SocialLinksManager({
 export default function SettingsPage() {
   const { data: settings, isLoading } = useSiteSettings();
   const { mutate: saveSettings, isPending } = useUpdateSiteSettings();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["general", "home_about", "about"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([
+    "general",
+    "home_about",
+    "about",
+  ]);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [banners, setBanners] = useState<string[]>([]);
   const [gallery, setGallery] = useState<string[]>([]);
@@ -1005,164 +1050,169 @@ export default function SettingsPage() {
 
             return (
               <div key={group.category} className="space-y-3">
-              <div
-                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
-              >
-                {/* Group Header */}
-                <button
-                  onClick={() => toggleGroup(group.category)}
-                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                      <Icon className="w-4 h-4 text-primary-600" />
-                    </div>
-                    <span className="font-semibold text-slate-800 text-sm">
-                      {group.title}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {group.fields.length} field
-                    </span>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-slate-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  )}
-                </button>
-
-                {/* Group Fields */}
-                {isExpanded && (
-                  <div className="px-5 pb-5 pt-2 border-t border-slate-100 space-y-4">
-                    {group.fields.map((field) => (
-                      <div key={field.key}>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                          {field.label}
-                        </label>
-                        {field.type === "image" ? (
-                          <ImageUpload
-                            value={formData[field.key] || ""}
-                            onChange={(url) => updateField(field.key, url)}
-                            placeholder={field.placeholder}
-                          />
-                        ) : field.type === "phone" ? (
-                          <input
-                            type="tel"
-                            inputMode="numeric"
-                            value={formData[field.key] || ""}
-                            onChange={(e) =>
-                              updateField(
-                                field.key,
-                                e.target.value.replace(/\D/g, "").slice(0, 14)
-                              )
-                            }
-                            placeholder={field.placeholder}
-                            maxLength={14}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          />
-                        ) : field.type === "textarea" ? (
-                          <textarea
-                            value={formData[field.key] || ""}
-                            onChange={(e) =>
-                              updateField(field.key, e.target.value)
-                            }
-                            placeholder={field.placeholder}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={formData[field.key] || ""}
-                            onChange={(e) =>
-                              updateField(field.key, e.target.value)
-                            }
-                            placeholder={field.placeholder}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          />
-                        )}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  {/* Group Header */}
+                  <button
+                    onClick={() => toggleGroup(group.category)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                        <Icon className="w-4 h-4 text-primary-600" />
                       </div>
-                    ))}
+                      <span className="font-semibold text-slate-800 text-sm">
+                        {group.title}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {group.fields.length} field
+                      </span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
 
-                    {group.category === "about" && (
-                      <div className="pt-2 border-t border-slate-100">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Misi
-                        </label>
-                        <MisiManager items={misiItems} onChange={setMisiItems} />
+                  {/* Group Fields */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 pt-2 border-t border-slate-100 space-y-4">
+                      {group.fields.map((field) => (
+                        <div key={field.key}>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            {field.label}
+                          </label>
+                          {field.type === "image" ? (
+                            <ImageUpload
+                              value={formData[field.key] || ""}
+                              onChange={(url) => updateField(field.key, url)}
+                              placeholder={field.placeholder}
+                            />
+                          ) : field.type === "phone" ? (
+                            <input
+                              type="tel"
+                              inputMode="numeric"
+                              value={formData[field.key] || ""}
+                              onChange={(e) =>
+                                updateField(
+                                  field.key,
+                                  e.target.value
+                                    .replace(/\D/g, "")
+                                    .slice(0, 14),
+                                )
+                              }
+                              placeholder={field.placeholder}
+                              maxLength={14}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                          ) : field.type === "textarea" ? (
+                            <textarea
+                              value={formData[field.key] || ""}
+                              onChange={(e) =>
+                                updateField(field.key, e.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              rows={3}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={formData[field.key] || ""}
+                              onChange={(e) =>
+                                updateField(field.key, e.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                          )}
+                        </div>
+                      ))}
+
+                      {group.category === "about" && (
+                        <div className="pt-2 border-t border-slate-100">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Misi
+                          </label>
+                          <MisiManager
+                            items={misiItems}
+                            onChange={setMisiItems}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {group.category === "general" && (
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <button
+                      onClick={() => setHeroExpanded(!heroExpanded)}
+                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                          <Image className="w-4 h-4 text-primary-600" />
+                        </div>
+                        <span className="font-semibold text-slate-800 text-sm">
+                          Hero / Banner
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          Slideshow Banner
+                        </span>
+                      </div>
+                      {heroExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      )}
+                    </button>
+                    {heroExpanded && (
+                      <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+                        <BannerManager
+                          banners={banners}
+                          onChange={setBanners}
+                          label="banner"
+                        />
                       </div>
                     )}
                   </div>
                 )}
-              </div>
 
-              {group.category === "general" && (
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <button
-                    onClick={() => setHeroExpanded(!heroExpanded)}
-                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                        <Image className="w-4 h-4 text-primary-600" />
+                {group.category === "about" && (
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <button
+                      onClick={() => setGalleryExpanded(!galleryExpanded)}
+                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                          <Image className="w-4 h-4 text-primary-600" />
+                        </div>
+                        <span className="font-semibold text-slate-800 text-sm">
+                          Galeri
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          Galeri di halaman About
+                        </span>
                       </div>
-                      <span className="font-semibold text-slate-800 text-sm">
-                        Hero / Banner
-                      </span>
-                      <span className="text-xs text-slate-400">Slideshow Banner</span>
-                    </div>
-                    {heroExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
-                  {heroExpanded && (
-                    <div className="px-5 pb-5 pt-2 border-t border-slate-100">
-                      <BannerManager
-                        banners={banners}
-                        onChange={setBanners}
-                        label="banner"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {group.category === "about" && (
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <button
-                    onClick={() => setGalleryExpanded(!galleryExpanded)}
-                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                        <Image className="w-4 h-4 text-primary-600" />
+                      {galleryExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      )}
+                    </button>
+                    {galleryExpanded && (
+                      <div className="px-5 pb-5 pt-2 border-t border-slate-100">
+                        <BannerManager
+                          banners={gallery}
+                          onChange={setGallery}
+                          label="galeri"
+                        />
                       </div>
-                      <span className="font-semibold text-slate-800 text-sm">
-                        Galeri
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        Galeri di halaman About
-                      </span>
-                    </div>
-                    {galleryExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
                     )}
-                  </button>
-                  {galleryExpanded && (
-                    <div className="px-5 pb-5 pt-2 border-t border-slate-100">
-                      <BannerManager
-                        banners={gallery}
-                        onChange={setGallery}
-                        label="galeri"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
               </div>
             );
           })}

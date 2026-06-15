@@ -12,7 +12,8 @@ export const DefaultMenu = [
   { id: 4, text: "Events", href: "/events" },
   { id: 5, text: "Testimonials", href: "/testimonials" },
   { id: 6, text: "Careers", href: "/careers" },
-  { id: 7, text: "Settings", href: "/settings" },
+  { id: 7, text: "Categories", href: "/careers/categories" },
+  { id: 8, text: "Settings", href: "/settings" },
 ];
 
 export const SuperMenu = [
@@ -23,7 +24,8 @@ export const SuperMenu = [
   { id: 5, text: "Events", href: "/events" },
   { id: 6, text: "Testimonials", href: "/testimonials" },
   { id: 7, text: "Careers", href: "/careers" },
-  { id: 8, text: "Settings", href: "/settings" },
+  { id: 8, text: "Categories", href: "/careers/categories" },
+  { id: 9, text: "Settings", href: "/settings" },
 ];
 
 export const colors = [
