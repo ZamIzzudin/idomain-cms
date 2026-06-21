@@ -6,7 +6,10 @@ export interface UserItem {
   id: number;
   username: string;
   displayName: string;
-  role: string;
+  role: string;       // role slug
+  roleName?: string;  // human-friendly label
+  roleId?: number;
+  status: number;
   createdAt: string;
 }
 
@@ -23,7 +26,7 @@ export async function UserListService(params: {
   page?: number;
   limit?: number;
   search?: string;
-  role?: string;
+  roleId?: number;
   sortOrder?: string;
   sortBy?: string;
 }) {
@@ -46,6 +49,7 @@ export async function RegisterService(payload: {
   username: string;
   password: string;
   displayName: string;
+  roleId?: number;
 }) {
   try {
     const { data: response } = await AxiosClient.post("/auth/register", payload);
@@ -62,7 +66,8 @@ export async function UpdateService(payload: {
   username?: string;
   displayName?: string;
   password?: string;
-  role?: string;
+  roleId?: number;
+  status?: number;
 }) {
   try {
     const { id, ...body } = payload;
@@ -83,5 +88,22 @@ export async function DeleteService(id: number) {
     return { status, message };
   } catch (error: any) {
     return error?.response?.data || { status: 400, message: "Failed to delete" };
+  }
+}
+
+// ---- Role helpers (for the role <select> on user form) ----
+
+export interface RoleOption {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export async function RoleListService() {
+  try {
+    const { data: response } = await AxiosClient.get("/roles");
+    return (response.items || []) as RoleOption[];
+  } catch (error: any) {
+    return [];
   }
 }

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Notification from "@/components/Notification";
 import ConfirmModal from "@/components/ConfirmModal";
+import Can from "@/components/Can";
 import {
   useCareerList,
   useApproveCareer,
@@ -348,36 +349,38 @@ export default function CareersPage() {
                           >
                             <Edit className="w-4 h-4 text-slate-500" />
                           </button>
-                          {item.status === "PENDING_REVIEW" && (
-                            <>
+                          <Can permission="career.approve">
+                            {item.status === "PENDING_REVIEW" && (
+                              <>
+                                <button
+                                  onClick={() => handleApprove(item.id)}
+                                  disabled={approvePending}
+                                  className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                                  title="Approve & Publish"
+                                >
+                                  <Check className="w-4 h-4 text-green-600" />
+                                </button>
+                                <button
+                                  onClick={() => handleReject(item.id)}
+                                  disabled={rejectPending}
+                                  className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                                  title="Reject"
+                                >
+                                  <XCircle className="w-4 h-4 text-orange-500" />
+                                </button>
+                              </>
+                            )}
+                            {item.status === "DRAFT" && (
                               <button
                                 onClick={() => handleApprove(item.id)}
                                 disabled={approvePending}
                                 className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                                title="Approve & Publish"
+                                title="Publish"
                               >
                                 <Check className="w-4 h-4 text-green-600" />
                               </button>
-                              <button
-                                onClick={() => handleReject(item.id)}
-                                disabled={rejectPending}
-                                className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-                                title="Reject"
-                              >
-                                <XCircle className="w-4 h-4 text-orange-500" />
-                              </button>
-                            </>
-                          )}
-                          {item.status === "DRAFT" && (
-                            <button
-                              onClick={() => handleApprove(item.id)}
-                              disabled={approvePending}
-                              className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Publish"
-                            >
-                              <Check className="w-4 h-4 text-green-600" />
-                            </button>
-                          )}
+                            )}
+                          </Can>
                           <button
                             onClick={() =>
                               setDeleteTarget({

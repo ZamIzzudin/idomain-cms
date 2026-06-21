@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import Notification from "@/components/Notification";
 import ConfirmModal from "@/components/ConfirmModal";
+import { canApproveAlumni, canAccessAlumniByBatch } from "@/lib/rbac";
+import { useGlobalState } from "@/lib/middleware";
 import {
   useAlumniList,
   useAlumniFilterOptions,
@@ -79,6 +81,7 @@ export default function AlumniPage() {
   const { mutate: exportAlumni, isPending: exportPending } = useExportAlumni();
   const { mutate: importAlumni, isPending: importPending } = useImportAlumni();
   const { mutate: downloadTemplate } = useDownloadTemplate();
+  const { state } = useGlobalState();
 
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
@@ -470,41 +473,47 @@ export default function AlumniPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-1">
-                          {!item.isApproved && (
-                            <button
-                              onClick={() => handleApprove(item.id)}
-                              className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Approve"
-                            >
-                              <Check className="w-4 h-4 text-green-500" />
-                            </button>
-                          )}
-                          {item.isApproved && (
-                            <button
-                              onClick={() => setRejectTarget({ id: item.id, name: item.name })}
-                              className="p-2 hover:bg-amber-50 rounded-lg transition-colors"
-                              title="Reject"
-                            >
+                          {canApproveAlumni(state.user, item.batch) &&
+                            !item.isApproved && (
+                              <button
+                                onClick={() => handleApprove(item.id)}
+                                className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Approve"
+                              >
+                                <Check className="w-4 h-4 text-green-500" />
+                              </button>
+                            )}
+                          {canApproveAlumni(state.user, item.batch) &&
+                            item.isApproved && (
+                              <button
+                                onClick={() => setRejectTarget({ id: item.id, name: item.name })}
+                                className="p-2 hover:bg-amber-50 rounded-lg transition-colors"
+                                title="Reject"
+                              >
                               <XCircle className="w-4 h-4 text-amber-500" />
                             </button>
+                            )}
+                          {canAccessAlumniByBatch(state.user, item.batch) && (
+                            <button
+                              onClick={() =>
+                                router.push(`/alumni/${item.id}/edit`)
+                              }
+                              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4 text-slate-500" />
+                            </button>
                           )}
-                          <button
-                            onClick={() =>
-                              router.push(`/alumni/${item.id}/edit`)
-                            }
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4 text-slate-500" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                            disabled={deletePending}
-                            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-400" />
-                          </button>
+                          {canAccessAlumniByBatch(state.user, item.batch) && (
+                            <button
+                              onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                              disabled={deletePending}
+                              className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -20,6 +20,7 @@ import {
 import { useAlumniStats } from "@/hooks/useAlumniStats";
 import { useCareerList, useApproveCareer, useRejectCareer } from "./careers/hook";
 import Notification from "@/components/Notification";
+import Can from "@/components/Can";
 
 const CMSAlumniMap = dynamic(() => import("@/components/CMSAlumniMap"), {
   ssr: false,
@@ -206,22 +207,24 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => handleApprove(item.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors"
-                    title="Approve"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Approve</span>
-                  </button>
-                  <button
-                    onClick={() => handleReject(item.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-500 rounded-lg text-xs font-medium hover:bg-orange-100 transition-colors"
-                    title="Reject"
-                  >
-                    <XCircle className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Reject</span>
-                  </button>
+                  <Can permission="career.approve">
+                    <button
+                      onClick={() => handleApprove(item.id)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-medium hover:bg-green-100 transition-colors"
+                      title="Approve"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Approve</span>
+                    </button>
+                    <button
+                      onClick={() => handleReject(item.id)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-500 rounded-lg text-xs font-medium hover:bg-orange-100 transition-colors"
+                      title="Reject"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Reject</span>
+                    </button>
+                  </Can>
                 </div>
               </div>
             ))}

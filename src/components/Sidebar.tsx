@@ -1,7 +1,7 @@
 /** @format */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,7 +10,8 @@ import { useLogout } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/app/(web)/(main)/settings/hook";
 
 import { MenuItem } from "@/interface/type";
-import { DefaultMenu, SuperMenu } from "@/lib/var";
+import { AppMenu } from "@/lib/var";
+import { can } from "@/lib/rbac";
 
 import {
   Home,
@@ -28,6 +29,7 @@ import {
   Quote,
   Briefcase,
   Tags,
+  ShieldCheck,
 } from "lucide-react";
 
 const iconMap: Record<string, any> = {
@@ -35,6 +37,7 @@ const iconMap: Record<string, any> = {
   Content: FileText,
   Pages: Layers,
   Users,
+  Roles: ShieldCheck,
   Alumni: GraduationCap,
   Articles: Newspaper,
   Events: CalendarDays,
@@ -55,13 +58,11 @@ export default function Sidebar() {
   const siteLogo = settings?.find((s) => s.key === "site_logo")?.value;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [menuList, setMenuList] = useState<MenuItem[]>(DefaultMenu);
 
-  useEffect(() => {
-    if (state.user && state.user.role === "SUPERADMIN") {
-      setMenuList(SuperMenu);
-    }
-  }, [state]);
+  // Filter menu items by the current user's permissions
+  const menuList = AppMenu.filter(
+    (item) => !item.permission || can(state.user, item.permission)
+  );
 
   return (
     <>
@@ -164,17 +165,21 @@ export default function Sidebar() {
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 mb-3">
               <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium text-sm">
-                  {state?.user?.display_name
-                    ? state?.user?.display_name[0]
-                    : "A"}
+                  {state?.user?.displayName
+                    ? state?.user?.displayName[0]
+                    : state?.user?.display_name
+                      ? state?.user?.display_name[0]
+                      : "A"}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-800 truncate">
-                  {state.user?.display_name || "User"}
+                  {state.user?.displayName ||
+                    state.user?.display_name ||
+                    "User"}
                 </p>
                 <p className="text-xs text-slate-500 truncate capitalize">
-                  {state.user?.role?.toLowerCase() || "user"}
+                  {state.user?.roleName || state.user?.role || "user"}
                 </p>
               </div>
             </div>

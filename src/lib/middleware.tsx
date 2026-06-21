@@ -65,7 +65,10 @@ export async function Middleware({ children }: { children: ReactNode }) {
 
   const actions: GlobalActions = {
     setAuth: (user: any | null, token: string) => {
-      dispatch({ type: "SET_AUTH", payload: { user, token } });
+      dispatch({
+        type: "SET_AUTH",
+        payload: { user, tokens: { access_token: token } },
+      });
       if (token) {
         AxiosClient.setTokens(token);
       }

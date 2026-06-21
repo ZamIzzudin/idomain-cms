@@ -4,13 +4,14 @@ import {
   RegisterService,
   UserListService,
   UpdateService,
+  RoleListService,
 } from "./service";
 
 export const useUserList = (params: {
   page?: number;
   limit?: number;
   search?: string;
-  role?: string;
+  roleId?: number;
   sortOrder?: string;
   sortBy?: string;
 }) => {
@@ -25,6 +26,15 @@ export const useUserList = (params: {
   });
 };
 
+export const useRoleOptions = () => {
+  return useQuery({
+    queryKey: ["role_options"],
+    queryFn: () => RoleListService(),
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useRegisterUser = () => {
   return useMutation({
     mutationKey: ["register_user"],
@@ -32,6 +42,7 @@ export const useRegisterUser = () => {
       username: string;
       password: string;
       displayName: string;
+      roleId?: number;
     }) => {
       const response = await RegisterService(payload);
       if (response.status !== 201)
@@ -49,7 +60,8 @@ export const useUpdateUser = () => {
       username?: string;
       displayName?: string;
       password?: string;
-      role?: string;
+      roleId?: number;
+      status?: number;
     }) => {
       const response = await UpdateService(payload);
       if (response.status !== 200)

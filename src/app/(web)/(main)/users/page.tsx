@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useGlobalState } from "@/lib/middleware";
-import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   Search,
@@ -16,12 +15,14 @@ import {
 } from "lucide-react";
 import Notification from "@/components/Notification";
 import ConfirmModal from "@/components/ConfirmModal";
+import RoleGuard from "@/components/RoleGuard";
 import dayjs from "dayjs";
 import {
   useUserList,
   useRegisterUser,
   useUpdateUser,
   useDeleteUser,
+  useRoleOptions,
 } from "./hook";
 
 type ModalMode = "NONE" | "ADD" | "UPDATE";
@@ -32,31 +33,28 @@ interface FormData {
   displayName: string;
   password: string;
   retypePassword: string;
-  role: string;
+  roleId: number;
 }
-
-const emptyForm: FormData = {
-  username: "",
-  displayName: "",
-  password: "",
-  retypePassword: "",
-  role: "ADMIN",
-};
 
 const PER_PAGE = 10;
 
-export default function UsersPage() {
+function UsersPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [filterRole, setFilterRole] = useState<string | undefined>(undefined);
+  const [filterRoleId, setFilterRoleId] = useState<number | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState("desc");
   const [sortBy, setSortBy] = useState("createdAt");
   const [showFilters, setShowFilters] = useState(false);
   const [modal, setModal] = useState<ModalMode>("NONE");
-  const [form, setForm] = useState<FormData>(emptyForm);
+  const [form, setForm] = useState<FormData>({
+    username: "",
+    displayName: "",
+    password: "",
+    retypePassword: "",
+    roleId: 2,
+  });
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; username: string } | null>(null);
 
-  const router = useRouter();
   const { state } = useGlobalState();
 
   const debouncedSearch = useDebounce(searchTerm);
@@ -65,7 +63,7 @@ export default function UsersPage() {
     page,
     limit: PER_PAGE,
     search: debouncedSearch || undefined,
-    role: filterRole,
+    roleId: filterRoleId,
     sortOrder,
     sortBy,
   });
@@ -73,17 +71,26 @@ export default function UsersPage() {
     useRegisterUser();
   const { mutate: updateUser, isPending: updatePending } = useUpdateUser();
   const { mutate: deleteUser, isPending: deletePending } = useDeleteUser();
+  const { data: roleOptions = [] } = useRoleOptions();
 
   const users = data?.items || [];
   const totalPages = data?.totalPages || 1;
   const total = data?.total || 0;
 
-  const updateField = (field: keyof FormData, value: string) => {
+  const emptyForm: FormData = {
+    username: "",
+    displayName: "",
+    password: "",
+    retypePassword: "",
+    roleId: roleOptions.find((r) => r.slug !== "superadmin")?.id ?? 2,
+  };
+
+  const updateField = (field: keyof FormData, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const resetFilters = () => {
-    setFilterRole(undefined);
+    setFilterRoleId(undefined);
     setSortOrder("desc");
     setSortBy("createdAt");
     setPage(1);
@@ -102,6 +109,7 @@ export default function UsersPage() {
         username: form.username,
         password: form.password,
         displayName: form.displayName,
+        roleId: form.roleId,
       },
       {
         onSuccess: () => {
@@ -124,7 +132,7 @@ export default function UsersPage() {
       id: form.id,
       username: form.username,
       displayName: form.displayName,
-      role: "ADMIN",
+      roleId: form.roleId,
     };
 
     if (form.password) {
@@ -169,18 +177,16 @@ export default function UsersPage() {
       displayName: user.displayName || user.display_name || "",
       password: "",
       retypePassword: "",
-      role: "ADMIN",
+      roleId: user.roleId ?? roleOptions.find((r) => r.slug === user.role)?.id ?? 2,
     });
     setModal("UPDATE");
   };
 
-  // Role guard
-  if (!state.user || state.user.role !== "SUPERADMIN") {
-    if (typeof window !== "undefined") {
-      router.push("/");
-    }
-    return null;
-  }
+  const canManage = (user: any) => {
+    // Cannot edit self, cannot edit users with higher/equal system role unless you are superadmin
+    if (state.user?.id === user.id) return false;
+    return true;
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -237,7 +243,7 @@ export default function UsersPage() {
           >
             <Filter className="w-4 h-4" />
             Filters
-            {filterRole && (
+            {filterRoleId && (
               <span className="w-2 h-2 bg-primary-600 rounded-full" />
             )}
           </button>
@@ -246,16 +252,19 @@ export default function UsersPage() {
         {showFilters && (
           <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
             <select
-              value={filterRole ?? ""}
+              value={filterRoleId ?? ""}
               onChange={(e) => {
-                setFilterRole(e.target.value || undefined);
+                setFilterRoleId(e.target.value ? Number(e.target.value) : undefined);
                 setPage(1);
               }}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">All Roles</option>
-              <option value="SUPERADMIN">Superadmin</option>
-              <option value="ADMIN">Admin</option>
+              {roleOptions.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
             </select>
             <select
               value={sortBy}
@@ -280,7 +289,7 @@ export default function UsersPage() {
               <option value="desc">Descending</option>
               <option value="asc">Ascending</option>
             </select>
-            {filterRole && (
+            {filterRoleId && (
               <button
                 onClick={resetFilters}
                 className="text-xs text-red-500 hover:text-red-700 font-medium"
@@ -359,12 +368,12 @@ export default function UsersPage() {
                       <td className="py-3 px-5">
                         <span
                           className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            user.role === "SUPERADMIN"
+                            user.role?.slug === "superadmin" || user.role === "superadmin"
                               ? "bg-blue-50 text-blue-700"
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
-                          {user.role}
+                          {user.role?.name || user.roleName || (typeof user.role === "string" ? user.role : "-")}
                         </span>
                       </td>
                       <td className="py-3 px-5 text-sm text-slate-500">
@@ -372,8 +381,8 @@ export default function UsersPage() {
                           "DD MMM YYYY",
                         )}
                       </td>
-                      {user.role !== "SUPERADMIN" ? (
-                        <td className="py-3 px-5">
+                      <td className="py-3 px-5">
+                        {canManage(user) ? (
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => openEdit(user)}
@@ -391,10 +400,12 @@ export default function UsersPage() {
                               <Trash2 className="w-4 h-4 text-red-400" />
                             </button>
                           </div>
-                        </td>
-                      ) : (
-                        <td className="py-3 px-5" />
-                      )}
+                        ) : (
+                          <div className="py-3 px-5 text-right text-xs text-slate-400">
+                            {state.user?.id === user.id ? "(you)" : "-"}
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -493,6 +504,24 @@ export default function UsersPage() {
                 />
               </div>
 
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={form.roleId}
+                  onChange={(e) => updateField("roleId", Number(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  {roleOptions.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -571,5 +600,13 @@ export default function UsersPage() {
         onCancel={() => setDeleteTarget(null)}
       />
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <RoleGuard permission="user.view">
+      <UsersPageContent />
+    </RoleGuard>
   );
 }
