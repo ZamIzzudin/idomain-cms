@@ -58,7 +58,7 @@ function RolesPageContent() {
     name: string;
   } | null>(null);
 
-  const { data: roles = [], refetch } = useRoleList();
+  const { data: roles = [] } = useRoleList();
   const { data: permissions = [] } = usePermissionList();
   const { mutate: createRole, isPending: createPending } = useCreateRole();
   const { mutate: updateRole, isPending: updatePending } = useUpdateRole();
@@ -177,7 +177,6 @@ function RolesPageContent() {
             Notification("success", "Role created successfully");
             setModal("NONE");
             setForm(emptyForm);
-            refetch();
           },
           onError: (error: any) => {
             Notification("error", error.message || "Failed to create role");
@@ -198,7 +197,6 @@ function RolesPageContent() {
             Notification("success", "Role updated successfully");
             setModal("NONE");
             setForm(emptyForm);
-            refetch();
           },
           onError: (error: any) => {
             Notification("error", error.message || "Failed to update role");
@@ -213,7 +211,6 @@ function RolesPageContent() {
     deleteRole(deleteTarget.id, {
       onSuccess: () => {
         Notification("success", "Role deleted successfully");
-        refetch();
       },
       onError: (error: any) => {
         Notification("error", error.message || "Failed to delete role");

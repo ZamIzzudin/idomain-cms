@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   RoleListService,
   PermissionListService,
@@ -31,6 +31,7 @@ export const usePermissionList = () => {
 };
 
 export const useCreateRole = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["create_role"],
     mutationFn: async (payload: {
@@ -45,10 +46,15 @@ export const useCreateRole = () => {
         throw new Error(response.message || "Failed to create role");
       return response;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["role_list"] });
+      queryClient.invalidateQueries({ queryKey: ["role_options"] });
+    },
   });
 };
 
 export const useUpdateRole = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["update_role"],
     mutationFn: async (payload: {
@@ -64,10 +70,15 @@ export const useUpdateRole = () => {
         throw new Error(response.message || "Failed to update role");
       return response;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["role_list"] });
+      queryClient.invalidateQueries({ queryKey: ["role_options"] });
+    },
   });
 };
 
 export const useDeleteRole = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["delete_role"],
     mutationFn: async (id: number) => {
@@ -75,6 +86,10 @@ export const useDeleteRole = () => {
       if (response.status !== 200)
         throw new Error(response.message || "Failed to delete role");
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["role_list"] });
+      queryClient.invalidateQueries({ queryKey: ["role_options"] });
     },
   });
 };
