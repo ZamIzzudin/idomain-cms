@@ -23,7 +23,6 @@ export async function PermissionListService() {
 
 export async function CreateRoleService(payload: {
   name: string;
-  slug: string;
   description?: string;
   permissionIds: number[];
   batchScopes?: number[];
@@ -43,7 +42,6 @@ export async function CreateRoleService(payload: {
 export async function UpdateRoleService(payload: {
   id: number;
   name?: string;
-  slug?: string;
   description?: string;
   permissionIds?: number[];
   batchScopes?: number[];

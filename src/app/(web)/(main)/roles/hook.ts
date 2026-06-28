@@ -36,7 +36,6 @@ export const useCreateRole = () => {
     mutationKey: ["create_role"],
     mutationFn: async (payload: {
       name: string;
-      slug: string;
       description?: string;
       permissionIds: number[];
       batchScopes?: number[];
@@ -60,7 +59,6 @@ export const useUpdateRole = () => {
     mutationFn: async (payload: {
       id: number;
       name?: string;
-      slug?: string;
       description?: string;
       permissionIds?: number[];
       batchScopes?: number[];

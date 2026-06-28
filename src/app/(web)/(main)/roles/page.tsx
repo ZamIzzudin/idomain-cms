@@ -28,7 +28,6 @@ type ModalMode = "NONE" | "ADD" | "UPDATE";
 interface FormData {
   id?: number;
   name: string;
-  slug: string;
   description: string;
   permissionIds: number[];
   batchScopes: number[];
@@ -36,18 +35,10 @@ interface FormData {
   isSystem?: boolean;
 }
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function RolesPageContent() {
   const [modal, setModal] = useState<ModalMode>("NONE");
   const [form, setForm] = useState<FormData>({
     name: "",
-    slug: "",
     description: "",
     permissionIds: [],
     batchScopes: [],
@@ -83,7 +74,6 @@ function RolesPageContent() {
 
   const emptyForm: FormData = {
     name: "",
-    slug: "",
     description: "",
     permissionIds: [],
     batchScopes: [],
@@ -138,7 +128,6 @@ function RolesPageContent() {
     setForm({
       id: role.id,
       name: role.name,
-      slug: role.slug,
       description: role.description || "",
       permissionIds: role.permissions.map((rp) => rp.permission.id),
       batchScopes: role.batchScopes.map((s) => s.batch).sort((a, b) => a - b),
@@ -153,8 +142,6 @@ function RolesPageContent() {
       return Notification("error", "Role name is required");
     }
 
-    const slug = form.slug || slugify(form.name);
-
     // Only send batchScopes when alumni.approve is granted
     const batchScopes =
       hasAlumniApprove && form.batchScopes.length > 0
@@ -167,7 +154,6 @@ function RolesPageContent() {
       createRole(
         {
           name: form.name,
-          slug,
           description: form.description || undefined,
           permissionIds: form.permissionIds,
           batchScopes,
@@ -350,48 +336,22 @@ function RolesPageContent() {
 
             <div className="p-6 overflow-y-auto space-y-5">
               {/* Basic Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Role Name
-                  </label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                        slug: prev.slug || slugify(e.target.value),
-                      }));
-                    }}
-                    placeholder="e.g. Editor"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Slug{" "}
-                    {form.isSystem && (
-                      <span className="text-slate-400 font-normal text-xs">
-                        (locked)
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    type="text"
-                    value={form.slug}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        slug: slugify(e.target.value),
-                      }))
-                    }
-                    disabled={form.isSystem}
-                    placeholder="editor"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-50 disabled:text-slate-400"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Role Name
+                </label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }));
+                  }}
+                  placeholder="e.g. Editor"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
               </div>
 
               <div>
